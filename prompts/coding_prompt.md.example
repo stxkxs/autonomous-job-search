@@ -1,0 +1,135 @@
+# Job Catalog Builder - Continue
+
+Continue building the Greenhouse job catalog for your target roles.
+
+## Step 1: Load Existing Catalog
+
+```bash
+cat data/jobs/jobs.json 2>/dev/null || echo "[]"
+```
+
+**Read the existing jobs first.** Count how many jobs are already cataloged. Extract existing `job_url` values to avoid duplicates.
+
+## Step 2: Search for MORE Jobs
+
+Use **WebSearch** - try different queries based on your skills:
+
+```
+site:boards.greenhouse.io "[your primary skill]" "senior" remote
+site:greenhouse.io "[your role type]" "[cloud platform]"
+site:greenhouse.io "backend" "[language]" "microservices"
+site:boards.greenhouse.io "devops" "kubernetes" remote
+"staff engineer" "[language]" greenhouse.io 2025
+```
+
+Also try company-specific:
+```
+site:boards.greenhouse.io/[company-name]
+[company] careers [skill] [skill] greenhouse
+```
+
+## Step 3: Verify Greenhouse Links
+
+For each job found:
+1. Check URL contains `greenhouse.io`
+2. If not, find company careers page
+3. Look for "Apply" button linking to Greenhouse
+4. **SKIP** jobs not on Greenhouse
+
+## Step 4: Fetch Job Details
+
+Use **WebFetch** on each Greenhouse URL to get:
+- Full job description
+- Requirements list
+- Team/department info
+- Any salary info
+- Application questions
+
+## Step 5: Research Company
+
+For each new company, search:
+- `"Company Name" glassdoor rating`
+- `"Company Name" crunchbase funding`
+- `"Company Name" engineering blog`
+- `"Company Name" tech stack`
+
+## Step 6: Prepare Application Materials
+
+For promising jobs (score 80+), draft:
+
+### Why This Company
+```
+[1-2 sentences connecting their mission to your interests]
+```
+
+### Why This Role
+```
+[How your experience maps to their needs]
+```
+
+### Key Points to Highlight
+```
+- [Achievement relevant to requirement 1]
+- [Achievement relevant to requirement 2]
+- [Achievement relevant to requirement 3]
+```
+
+### Questions to Ask
+```
+- [Thoughtful question about the role/team]
+- [Question showing you researched them]
+```
+
+## Step 7: Update Catalog (APPEND, Don't Overwrite)
+
+1. **Read** existing `data/jobs/jobs.json`
+2. **Check** if job_url already exists (skip duplicates)
+3. **Append** new jobs to the array
+4. **Write** the combined array back
+
+```python
+# Pseudocode
+existing = read("data/jobs/jobs.json")
+existing_urls = [j["job_url"] for j in existing]
+
+for new_job in found_jobs:
+    if new_job["job_url"] not in existing_urls:
+        existing.append(new_job)
+
+write("data/jobs/jobs.json", existing)
+```
+
+Each new job should have:
+```json
+{
+  "id": "job-XXX",
+  "job_url": "https://boards.greenhouse.io/...",
+  "company": "...",
+  "role": "...",
+  "location": "...",
+  "salary": "...",
+  "found_date": "YYYY-MM-DD",
+  "match_score": 85,
+  "requirements": [...],
+  "tech_stack": [...],
+  "company_info": {...},
+  "why_good_fit": "...",
+  "experience_to_highlight": [...],
+  "questions_to_ask": [...]
+}
+```
+
+## Step 8: Update Summary
+
+Refresh `jobs_summary.md` with:
+- New jobs added
+- Updated stats
+- Top opportunities ranked
+
+## REMEMBER
+
+- **Greenhouse URLs only** - skip everything else
+- **Real links** - verify each URL works
+- **Full details** - fetch the actual job page
+- **Company research** - glassdoor, funding, size
+- **Application prep** - why apply, what to highlight

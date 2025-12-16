@@ -1,0 +1,204 @@
+# Job Catalog Builder - Greenhouse Jobs Only
+
+Build a job catalog for a **Senior/Staff Engineer** with X+ years experience. Focus on **Greenhouse ATS only**.
+
+## Candidate Profile
+
+**Location:** Your City, State (Remote-first or local, USA-based companies only)
+
+**Experience:**
+- X+ years software engineering
+- Relevant certifications
+- Previous Company 1 - Role (key achievements)
+- Previous Company 2 - Role (key achievements)
+- Previous Company 3 - Role (key achievements)
+
+**Core Skills:**
+- Primary programming language(s)
+- Cloud platform expertise
+- Container/orchestration tools
+- Specialty areas (Platform, SRE, DevOps, etc.)
+- Observability tools
+- Infrastructure as Code tools
+- Secondary languages
+
+**Target Roles:**
+- Staff/Senior Software Engineer
+- Staff/Senior Platform Engineer
+- Senior SRE / Site Reliability Engineer
+- Senior DevOps Engineer
+- Principal Engineer
+
+## CRITICAL: Greenhouse Only, USA Remote/Your City
+
+**ONLY save jobs that:**
+1. Use Greenhouse ATS (`greenhouse.io` in URL)
+2. Are Remote (US) OR located in Your City
+3. Are with USA-based companies
+
+## Step 1: Setup (Preserve Existing Data)
+
+```bash
+mkdir -p data/jobs data/companies
+# Only create if doesn't exist - NEVER overwrite
+[ -f data/jobs/jobs.json ] || echo "[]" > data/jobs/jobs.json
+```
+
+**IMPORTANT:** Always READ existing `data/jobs/jobs.json` first and APPEND new jobs. Never overwrite existing entries. Check for duplicates by job_url before adding.
+
+## Step 2: Search for Jobs
+
+Use **WebSearch** with queries tailored to your skills:
+
+### Platform/SRE Roles
+```
+site:boards.greenhouse.io "staff platform engineer" remote
+site:boards.greenhouse.io "senior SRE" remote USA
+site:boards.greenhouse.io "site reliability engineer" "[cloud]" "[orchestration]"
+site:greenhouse.io "platform engineer" "[language]" remote
+```
+
+### Backend/Software Engineer
+```
+site:boards.greenhouse.io "staff software engineer" "[language]" remote
+site:boards.greenhouse.io "senior backend engineer" "[framework]" remote
+site:boards.greenhouse.io "staff engineer" "[cloud]" "[orchestration]" remote
+site:greenhouse.io "senior [language] engineer" remote USA
+```
+
+### DevOps/Infrastructure
+```
+site:boards.greenhouse.io "senior devops engineer" "[cloud]" remote
+site:boards.greenhouse.io "infrastructure engineer" "[IaC tool]" "[orchestration]"
+site:greenhouse.io "devops" "[cloud service]" remote
+```
+
+### Location Specific
+```
+site:boards.greenhouse.io "[your city]" engineer
+site:greenhouse.io "[your city]" software
+```
+
+### Top Companies Known to Use Greenhouse
+```
+site:boards.greenhouse.io/stripe engineer
+site:boards.greenhouse.io/datadog
+site:boards.greenhouse.io/cloudflare
+site:boards.greenhouse.io/figma
+site:boards.greenhouse.io/notion
+site:boards.greenhouse.io/plaid
+site:boards.greenhouse.io/ramp
+```
+
+## Step 3: For Each Job Found
+
+Use **WebFetch** on the Greenhouse URL to extract:
+
+### Required Info
+- Job URL (MUST be greenhouse.io)
+- Company name
+- Role/Title
+- Location (must be Remote US or Your City)
+- Salary range (if listed)
+
+### Job Details
+- Responsibilities
+- Requirements (years exp, skills)
+- Nice-to-have
+- Tech stack
+- Team size/structure
+
+### Company Research
+Search for each company:
+- `"Company Name" glassdoor rating engineering`
+- `"Company Name" crunchbase funding`
+- `"Company Name" engineering blog culture`
+
+## Step 4: Score Each Job
+
+Score 0-100 based on match to candidate profile:
+
+**High Score (85+):**
+- Strong skill overlap with requirements
+- Role focus matches specialty
+- Appropriate seniority level
+- Remote US or your city
+- Good company reputation
+
+**Medium Score (70-84):**
+- Some skill overlap
+- May need to stretch on some requirements
+
+**Skip (< 70):**
+- Wrong location
+- Wrong seniority level
+- Minimal skill overlap
+
+## Step 5: Prepare Application Materials
+
+For each job, draft:
+
+### Why This Company
+```
+[Connect their mission/product to your interests]
+```
+
+### Key Experience to Highlight
+```
+- Company 1: [relevant achievement]
+- Company 2: [relevant achievement]
+- Company 3: [relevant achievement]
+- Certifications: [which apply]
+```
+
+### Questions to Ask
+```
+- [About team/architecture]
+- [About growth/challenges]
+```
+
+## Step 6: Save to Catalog
+
+Save to `data/jobs/jobs.json`:
+
+```json
+[
+  {
+    "id": "job-001",
+    "job_url": "https://boards.greenhouse.io/company/jobs/12345",
+    "company": "Company Name",
+    "role": "Staff Platform Engineer",
+    "location": "Remote (US)",
+    "salary": "$180k-220k",
+    "found_date": "YYYY-MM-DD",
+    "match_score": 92,
+    "requirements": ["X+ years", "Skill 1", "Skill 2", "Skill 3"],
+    "tech_stack": ["Tech 1", "Tech 2", "Tech 3"],
+    "responsibilities": ["Lead platform initiatives", "..."],
+    "company_size": "500-1000",
+    "glassdoor_rating": "4.3",
+    "funding": "Series D",
+    "why_good_fit": "Strong skill overlap, background matches",
+    "experience_to_highlight": [
+      "Company 1: Relevant achievement",
+      "Company 2: Relevant achievement",
+      "Certifications: Which apply"
+    ],
+    "questions_to_ask": ["Team structure?", "Tech stack decisions?"]
+  }
+]
+```
+
+## Step 7: Create Summary
+
+Create `jobs_summary.md` with top opportunities ranked by match score.
+
+## Priority
+
+1. **SEARCH** greenhouse.io with varied queries
+2. **VERIFY** Remote US or your city location
+3. **FETCH** full job details
+4. **SCORE** based on skill match
+5. **RESEARCH** company reputation
+6. **PREPARE** application talking points
+7. **SAVE** with real Greenhouse URLs

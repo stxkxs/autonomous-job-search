@@ -1,0 +1,84 @@
+# Job Catalog - Your Name
+
+## Candidate Profile
+
+**Name:** Your Name
+**Location:** Your City, State
+**Target:** Remote (US) or Your City local, USA-based companies
+**ATS:** Greenhouse only
+
+## Experience Summary
+
+- **X+ years** software engineering
+- **Certifications:** List your relevant certifications
+- **Recent:** Your most recent role and key accomplishments
+- **Previous:** Previous notable roles and achievements
+
+## Core Technical Skills
+
+### Languages
+- Your primary language(s), secondary language(s)
+
+### Cloud & Infrastructure
+- Cloud platforms (AWS, GCP, Azure)
+- Container orchestration (Kubernetes, ECS, etc.)
+- Infrastructure as Code tools
+
+### Platform & Observability
+- Monitoring and observability tools
+- Logging and tracing systems
+
+### Frameworks
+- Backend frameworks
+- Frontend frameworks (if applicable)
+- Testing frameworks
+
+## Target Roles
+
+1. Your Primary Target Role
+2. Secondary Target Role
+3. Third Target Role
+
+## Search Criteria
+
+### Must Have
+- Greenhouse ATS application
+- Remote (US) OR Your City
+- USA-based company
+- Appropriate seniority level
+
+### Strong Match Skills
+- Your strongest skill combinations
+- Technologies you excel at
+
+### Good Match Skills
+- Secondary skills
+- Related technologies
+
+## Output Format
+
+Each job in `data/jobs/jobs.json` should include:
+
+```json
+{
+  "id": "job-XXX",
+  "job_url": "https://boards.greenhouse.io/...",
+  "company": "...",
+  "role": "...",
+  "location": "Remote (US) | Your City",
+  "salary": "$XXXk-$XXXk",
+  "found_date": "YYYY-MM-DD",
+  "match_score": 85,
+  "requirements": [...],
+  "tech_stack": [...],
+  "company_info": {
+    "description": "...",
+    "size": "...",
+    "glassdoor": "...",
+    "funding": "..."
+  },
+  "why_good_fit": "...",
+  "experience_to_highlight": [...],
+  "questions_to_ask": [...]
+}
+```
