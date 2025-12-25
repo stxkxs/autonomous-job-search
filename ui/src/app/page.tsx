@@ -14,6 +14,12 @@ import { searchJobs, filterByScore, sortJobs } from "@/lib/jobs";
 import { useJobs } from "@/hooks/use-jobs";
 import { Job, calculateStats } from "@/types/job";
 import { LayoutGrid, List, BarChart3, Loader2 } from "lucide-react";
+import {
+  SCORE_LABELS,
+  SCORE_COLORS,
+  SCORE_CATEGORIES,
+  DISPLAY_LIMITS,
+} from "@/constants";
 
 export default function Home() {
   const { jobs: allJobs, loading, error } = useJobs();
@@ -89,7 +95,7 @@ export default function Home() {
                 transition={{ delay: 0.1 }}
                 className="text-muted-foreground"
               >
-                {loading ? "Loading..." : `${stats.total} positions found from Greenhouse ATS`}
+                {loading ? "Loading..." : `${stats.total} positions found across all platforms`}
               </motion.p>
             </div>
 
@@ -215,7 +221,7 @@ export default function Home() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                       {Object.entries(stats.companyCounts)
                         .sort(([, a], [, b]) => b - a)
-                        .slice(0, 10)
+                        .slice(0, DISPLAY_LIMITS.COMPANIES)
                         .map(([company, count], index) => (
                           <motion.div
                             key={company}
@@ -242,50 +248,30 @@ export default function Home() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                        <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
-                          Priority (90+)
-                        </p>
-                        <p className="text-3xl font-bold text-emerald-500 mt-1">
-                          {stats.priority}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {stats.total > 0 ? ((stats.priority / stats.total) * 100).toFixed(1) : 0}% of total
-                        </p>
-                      </div>
-                      <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                        <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                          High Match (85-89)
-                        </p>
-                        <p className="text-3xl font-bold text-blue-500 mt-1">
-                          {stats.highMatch}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {stats.total > 0 ? ((stats.highMatch / stats.total) * 100).toFixed(1) : 0}% of total
-                        </p>
-                      </div>
-                      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                        <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                          Good Match (80-84)
-                        </p>
-                        <p className="text-3xl font-bold text-amber-500 mt-1">
-                          {stats.goodMatch}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {stats.total > 0 ? ((stats.goodMatch / stats.total) * 100).toFixed(1) : 0}% of total
-                        </p>
-                      </div>
-                      <div className="p-4 rounded-xl bg-gray-500/10 border border-gray-500/20">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                          Other (&lt;80)
-                        </p>
-                        <p className="text-3xl font-bold text-gray-500 mt-1">
-                          {stats.other}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {stats.total > 0 ? ((stats.other / stats.total) * 100).toFixed(1) : 0}% of total
-                        </p>
-                      </div>
+                      {[
+                        { key: SCORE_CATEGORIES.PRIORITY, count: stats.priority },
+                        { key: SCORE_CATEGORIES.HIGH, count: stats.highMatch },
+                        { key: SCORE_CATEGORIES.GOOD, count: stats.goodMatch },
+                        { key: SCORE_CATEGORIES.LOW, count: stats.other },
+                      ].map(({ key, count }) => {
+                        const colors = SCORE_COLORS[key];
+                        return (
+                          <div
+                            key={key}
+                            className={`p-4 rounded-xl ${colors.bg} border ${colors.border}`}
+                          >
+                            <p className={`text-sm ${colors.text} font-medium`}>
+                              {SCORE_LABELS[key]}
+                            </p>
+                            <p className={`text-3xl font-bold ${colors.text.split(' ')[0].replace('text-', 'text-')} mt-1`}>
+                              {count}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {stats.total > 0 ? ((count / stats.total) * 100).toFixed(1) : 0}% of total
+                            </p>
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>

@@ -13,7 +13,14 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Job, getScoreColor, getScoreBgColor } from "@/types/job";
+import {
+  Job,
+  getScoreColor,
+  getScoreBgColor,
+  getATSDisplayName,
+  getATSColor,
+  detectATSPlatform,
+} from "@/types/job";
 
 interface JobCardProps {
   job: Job;
@@ -25,6 +32,7 @@ interface JobCardProps {
 export function JobCard({ job, index, onSelect, isSelected }: JobCardProps) {
   const scoreColor = getScoreColor(job.match_score);
   const scoreBgColor = getScoreBgColor(job.match_score);
+  const atsPlatform = job.ats_platform || detectATSPlatform(job.job_url);
 
   return (
     <motion.div
@@ -41,6 +49,15 @@ export function JobCard({ job, index, onSelect, isSelected }: JobCardProps) {
             : "border-border/50 hover:border-border"
         }`}
         onClick={() => onSelect(job)}
+        role="button"
+        aria-label={`View details for ${job.role} at ${job.company}`}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSelect(job);
+          }
+        }}
       >
         <CardContent className="p-5">
           <div className="flex items-start justify-between gap-4">
@@ -48,17 +65,32 @@ export function JobCard({ job, index, onSelect, isSelected }: JobCardProps) {
               <div className="flex items-center gap-2 mb-2">
                 <div
                   className={`flex items-center justify-center w-12 h-12 rounded-xl ${scoreBgColor} border`}
+                  title={`Match score: ${job.match_score}/100`}
+                  aria-label={`Match score ${job.match_score} out of 100`}
                 >
                   <span className={`text-lg font-bold ${scoreColor}`}>
                     {job.match_score}
                   </span>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-lg truncate group-hover:text-violet-600 transition-colors">
-                    {job.role}
-                  </h3>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3
+                      className="font-semibold text-lg truncate group-hover:text-violet-600 transition-colors"
+                      title={job.role}
+                    >
+                      {job.role}
+                    </h3>
+                    {atsPlatform && (
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] px-1.5 py-0 h-4 ${getATSColor(atsPlatform)}`}
+                      >
+                        {getATSDisplayName(atsPlatform)}
+                      </Badge>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1 text-muted-foreground">
-                    <Building2 className="h-3.5 w-3.5" />
+                    <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
                     <span className="text-sm font-medium">{job.company}</span>
                   </div>
                 </div>
@@ -67,19 +99,23 @@ export function JobCard({ job, index, onSelect, isSelected }: JobCardProps) {
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-3">
                 {job.location && (
                   <div className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5" />
-                    <span className="truncate max-w-[200px]">{job.location}</span>
+                    <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span className="truncate max-w-[200px]" title={job.location}>
+                      {job.location}
+                    </span>
                   </div>
                 )}
                 {job.salary && job.salary !== "Not listed" && (
                   <div className="flex items-center gap-1">
-                    <DollarSign className="h-3.5 w-3.5" />
-                    <span className="truncate max-w-[200px]">{job.salary}</span>
+                    <DollarSign className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span className="truncate max-w-[200px]" title={job.salary}>
+                      {job.salary}
+                    </span>
                   </div>
                 )}
                 {job.found_date && (
                   <div className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5" />
+                    <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
                     <span>{job.found_date}</span>
                   </div>
                 )}
@@ -108,11 +144,14 @@ export function JobCard({ job, index, onSelect, isSelected }: JobCardProps) {
             <div className="flex flex-col items-end gap-2">
               {job.status === "priority" && (
                 <Badge className="bg-emerald-500 hover:bg-emerald-600">
-                  <Star className="h-3 w-3 mr-1" />
+                  <Star className="h-3 w-3 mr-1" aria-hidden="true" />
                   Priority
                 </Badge>
               )}
-              <ChevronRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              <ChevronRight
+                className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-hidden="true"
+              />
             </div>
           </div>
         </CardContent>

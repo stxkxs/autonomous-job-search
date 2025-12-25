@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { JobStats } from "@/types/job";
+import { DISPLAY_LIMITS, SCORE_LABELS } from "@/constants";
 
 interface StatsCardsProps {
   stats: JobStats;
@@ -40,21 +41,21 @@ export function StatsCards({ stats }: StatsCardsProps) {
       bgColor: "bg-violet-500/10",
     },
     {
-      title: "Priority (90+)",
+      title: SCORE_LABELS.priority,
       value: stats.priority,
       icon: Target,
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
     },
     {
-      title: "High Match (85-89)",
+      title: SCORE_LABELS.high,
       value: stats.highMatch,
       icon: TrendingUp,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
     },
     {
-      title: "Good Match (80-84)",
+      title: SCORE_LABELS.good,
       value: stats.goodMatch,
       icon: CheckCircle,
       color: "text-amber-500",
@@ -95,7 +96,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
 export function TechStackChart({ stats }: StatsCardsProps) {
   const topTech = Object.entries(stats.techStackCounts)
     .sort(([, a], [, b]) => b - a)
-    .slice(0, 10);
+    .slice(0, DISPLAY_LIMITS.TECH_ANALYTICS);
 
   const maxCount = Math.max(...topTech.map(([, count]) => count));
 
@@ -140,7 +141,7 @@ export function TechStackChart({ stats }: StatsCardsProps) {
 export function LocationChart({ stats }: StatsCardsProps) {
   const locations = Object.entries(stats.locationCounts)
     .sort(([, a], [, b]) => b - a)
-    .slice(0, 5);
+    .slice(0, DISPLAY_LIMITS.LOCATIONS);
 
   return (
     <Card className="border-0 shadow-sm">

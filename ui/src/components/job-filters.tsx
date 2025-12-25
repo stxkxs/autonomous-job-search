@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SCORE_THRESHOLDS, DISPLAY_LIMITS } from "@/constants";
 
 interface JobFiltersProps {
   searchQuery: string;
@@ -44,20 +46,23 @@ export function JobFilters({
 }: JobFiltersProps) {
   const scoreOptions = [
     { value: 0, label: "All Jobs" },
-    { value: 80, label: "80+ Score" },
-    { value: 85, label: "85+ Score" },
-    { value: 90, label: "90+ Score" },
+    { value: SCORE_THRESHOLDS.GOOD, label: `${SCORE_THRESHOLDS.GOOD}+ Score` },
+    { value: SCORE_THRESHOLDS.HIGH, label: `${SCORE_THRESHOLDS.HIGH}+ Score` },
+    { value: SCORE_THRESHOLDS.PRIORITY, label: `${SCORE_THRESHOLDS.PRIORITY}+ Score` },
   ];
 
-  const topTech = availableTech.slice(0, 15);
+  const topTech = availableTech.slice(0, DISPLAY_LIMITS.TECH_FILTER);
 
-  const handleTechToggle = (tech: string) => {
-    if (selectedTech.includes(tech)) {
-      onTechChange(selectedTech.filter((t) => t !== tech));
-    } else {
-      onTechChange([...selectedTech, tech]);
-    }
-  };
+  const handleTechToggle = useCallback(
+    (tech: string) => {
+      if (selectedTech.includes(tech)) {
+        onTechChange(selectedTech.filter((t) => t !== tech));
+      } else {
+        onTechChange([...selectedTech, tech]);
+      }
+    },
+    [selectedTech, onTechChange]
+  );
 
   const clearFilters = () => {
     onSearchChange("");
