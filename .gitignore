@@ -62,6 +62,7 @@ secrets.json
 prompts/*.txt
 prompts/*.md
 !prompts/*.example
+app_spec.txt
 
 # OS
 .DS_Store
