@@ -1,135 +1,248 @@
 # Job Catalog Builder - Continue
 
-Continue building the Greenhouse job catalog for your target roles.
+Continue building the job catalog. **Search new queries and platforms** to find more opportunities.
 
 ## Step 1: Load Existing Catalog
 
 ```bash
 cat data/jobs/jobs.json 2>/dev/null || echo "[]"
+cat data/companies/companies.json 2>/dev/null || echo "{}"
 ```
 
-**Read the existing jobs first.** Count how many jobs are already cataloged. Extract existing `job_url` values to avoid duplicates.
+**Before searching:**
+1. Count existing jobs
+2. Extract all `job_url` values (for duplicate checking)
+3. Note which ATS platforms are already represented
+4. Identify companies already researched
 
-## Step 2: Search for MORE Jobs
+## Step 2: Search Strategy - Expand Coverage
 
-Use **WebSearch** - try different queries based on your skills:
+### A. Search Platforms Not Yet Covered
+If existing jobs are mostly Greenhouse, prioritize Lever/Ashby/Workable searches.
 
+### B. Try New Query Variations
+
+**Role Title Variations:**
 ```
-site:boards.greenhouse.io "[your primary skill]" "senior" remote
-site:greenhouse.io "[your role type]" "[cloud platform]"
-site:greenhouse.io "backend" "[language]" "microservices"
-site:boards.greenhouse.io "devops" "kubernetes" remote
-"staff engineer" "[language]" greenhouse.io 2025
-```
-
-Also try company-specific:
-```
-site:boards.greenhouse.io/[company-name]
-[company] careers [skill] [skill] greenhouse
-```
-
-## Step 3: Verify Greenhouse Links
-
-For each job found:
-1. Check URL contains `greenhouse.io`
-2. If not, find company careers page
-3. Look for "Apply" button linking to Greenhouse
-4. **SKIP** jobs not on Greenhouse
-
-## Step 4: Fetch Job Details
-
-Use **WebFetch** on each Greenhouse URL to get:
-- Full job description
-- Requirements list
-- Team/department info
-- Any salary info
-- Application questions
-
-## Step 5: Research Company
-
-For each new company, search:
-- `"Company Name" glassdoor rating`
-- `"Company Name" crunchbase funding`
-- `"Company Name" engineering blog`
-- `"Company Name" tech stack`
-
-## Step 6: Prepare Application Materials
-
-For promising jobs (score 80+), draft:
-
-### Why This Company
-```
-[1-2 sentences connecting their mission to your interests]
+site:boards.greenhouse.io "platform engineer" remote
+site:boards.greenhouse.io "infrastructure engineer" remote
+site:boards.greenhouse.io "developer experience" engineer remote
+site:boards.greenhouse.io "devops engineer" remote
+site:boards.greenhouse.io "site reliability" remote
+site:boards.greenhouse.io "backend engineer" "infrastructure" remote
 ```
 
-### Why This Role
+**Skill-Focused Queries:**
 ```
-[How your experience maps to their needs]
-```
-
-### Key Points to Highlight
-```
-- [Achievement relevant to requirement 1]
-- [Achievement relevant to requirement 2]
-- [Achievement relevant to requirement 3]
+site:jobs.lever.co "kubernetes" "platform" remote
+site:jobs.lever.co "terraform" "AWS" remote
+site:jobs.ashbyhq.com "golang" "infrastructure" remote
+site:apply.workable.com "python" "devops" remote
 ```
 
-### Questions to Ask
+**Seniority Variations:**
 ```
-- [Thoughtful question about the role/team]
-- [Question showing you researched them]
+site:boards.greenhouse.io "staff" platform remote
+site:jobs.lever.co "senior" infrastructure remote
+site:jobs.ashbyhq.com "principal" engineer remote
+site:boards.greenhouse.io "lead" platform remote
 ```
 
-## Step 7: Update Catalog (APPEND, Don't Overwrite)
+**Company-Specific (High-Value Targets):**
+```
+# Developer Tools
+site:boards.greenhouse.io/launchdarkly
+site:boards.greenhouse.io/postman
+site:jobs.lever.co/snyk
+site:jobs.ashbyhq.com/linear
 
-1. **Read** existing `data/jobs/jobs.json`
-2. **Check** if job_url already exists (skip duplicates)
-3. **Append** new jobs to the array
-4. **Write** the combined array back
+# Infrastructure
+site:boards.greenhouse.io/hashicorp
+site:boards.greenhouse.io/cockroachlabs
+site:jobs.lever.co/planetscale
+site:jobs.ashbyhq.com/railway
+
+# Fintech
+site:jobs.ashbyhq.com/ramp
+site:jobs.ashbyhq.com/brex
+site:boards.greenhouse.io/plaid
+site:jobs.lever.co/mercury
+
+# Observability
+site:boards.greenhouse.io/grafana
+site:boards.greenhouse.io/chronosphere
+site:jobs.lever.co/honeycomb
+```
+
+**Time-Bounded Searches:**
+```
+"staff platform engineer" remote 2025
+"infrastructure engineer" kubernetes hiring 2025
+"platform team" golang remote January 2025
+```
+
+## Step 3: Process Each New Job Found
+
+### A. Check for Duplicates FIRST
+```python
+existing_urls = [job["job_url"] for job in existing_jobs]
+if new_job_url in existing_urls:
+    skip  # Already cataloged
+```
+
+### B. Identify ATS Platform
+From the URL:
+- `greenhouse.io` → `"ats_platform": "greenhouse"`
+- `lever.co` → `"ats_platform": "lever"`
+- `ashbyhq.com` → `"ats_platform": "ashby"`
+- `workable.com` → `"ats_platform": "workable"`
+
+### C. Fetch Complete Job Details
+Use **WebFetch** on the job URL to get:
+- Full description (not just title)
+- All requirements listed
+- Nice-to-haves vs must-haves
+- Tech stack mentioned anywhere
+- Team size/structure if mentioned
+- Salary range (check multiple places)
+- Remote policy details
+- Visa/work auth requirements
+
+### D. Research Company (If New)
+Check if company already in `companies.json`. If not:
+```
+"Company Name" glassdoor rating engineering culture
+"Company Name" crunchbase funding investors
+"Company Name" engineering blog
+"Company Name" tech stack infrastructure
+"Company Name" layoffs 2024 2025
+"Company Name" employee reviews
+```
+
+## Step 4: Score and Prepare Materials
+
+### Scoring Rubric (Reminder)
+| Score | Criteria |
+|-------|----------|
+| 90+ | Staff+, Platform/Infra focus, Remote US, 80%+ stack match, strong company |
+| 85-89 | Senior+, related focus, most skills match, good company |
+| 80-84 | Senior, partial match, interesting challenges |
+| <80 | Skip or note for later |
+
+### Application Materials (For 80+ Jobs)
+
+**Why This Company:**
+- What do they build that interests you?
+- How does their mission connect to your values?
+- What about their engineering culture appeals?
+
+**Experience to Highlight:**
+Map YOUR specific achievements to THEIR requirements:
+```
+Their Requirement → Your Achievement
+"Kubernetes expertise" → "Led EKS platform serving 200+ services at Stripe"
+"Developer tools experience" → "Built deployment platform for 50k devs at Vercel"
+"Observability background" → "Architected tracing pipeline at Datadog (2M spans/sec)"
+```
+
+**Questions to Ask:**
+- Technical depth question about their architecture
+- Team/process question showing genuine interest
+- Growth/roadmap question showing long-term thinking
+
+## Step 5: Update Catalog (APPEND Only)
 
 ```python
-# Pseudocode
-existing = read("data/jobs/jobs.json")
-existing_urls = [j["job_url"] for j in existing]
+# Pseudocode - NEVER overwrite existing entries
+existing = json.load("data/jobs/jobs.json")
+existing_urls = {j["job_url"] for j in existing}
 
-for new_job in found_jobs:
-    if new_job["job_url"] not in existing_urls:
-        existing.append(new_job)
+new_jobs = []
+for job in found_jobs:
+    if job["job_url"] not in existing_urls:
+        job["id"] = f"job-{len(existing) + len(new_jobs) + 1:03d}"
+        new_jobs.append(job)
 
-write("data/jobs/jobs.json", existing)
+combined = existing + new_jobs
+json.dump("data/jobs/jobs.json", combined)
 ```
 
-Each new job should have:
+### Required Fields for Each Job
 ```json
 {
   "id": "job-XXX",
-  "job_url": "https://boards.greenhouse.io/...",
-  "company": "...",
-  "role": "...",
-  "location": "...",
-  "salary": "...",
-  "found_date": "YYYY-MM-DD",
-  "match_score": 85,
-  "requirements": [...],
-  "tech_stack": [...],
-  "company_info": {...},
-  "why_good_fit": "...",
-  "experience_to_highlight": [...],
-  "questions_to_ask": [...]
+  "job_url": "https://...",
+  "ats_platform": "greenhouse|lever|ashby|workable",
+  "company": "Company Name",
+  "role": "Exact Title",
+  "location": "Remote (US) | City, ST | Hybrid",
+  "salary": "$XXXk-$XXXk | Not listed",
+  "found_date": "2025-01-15",
+  "match_score": 87,
+  "requirements": ["Req 1", "Req 2"],
+  "tech_stack": ["Tech 1", "Tech 2"],
+  "responsibilities": ["Resp 1", "Resp 2"],
+  "company_size": "XXX-XXX | Unknown",
+  "glassdoor_rating": "X.X | N/A",
+  "funding": "Series X ($XXM) | Public | Unknown",
+  "why_good_fit": "Specific reasons...",
+  "experience_to_highlight": ["Achievement 1", "Achievement 2"],
+  "questions_to_ask": ["Question 1", "Question 2"]
 }
 ```
 
-## Step 8: Update Summary
+## Step 6: Update Summary
 
-Refresh `jobs_summary.md` with:
-- New jobs added
-- Updated stats
-- Top opportunities ranked
+Refresh `jobs_summary.md`:
 
-## REMEMBER
+```markdown
+# Job Search Summary
 
-- **Greenhouse URLs only** - skip everything else
-- **Real links** - verify each URL works
-- **Full details** - fetch the actual job page
-- **Company research** - glassdoor, funding, size
-- **Application prep** - why apply, what to highlight
+**Last Updated:** 2025-01-15
+**Total Jobs:** 47
+
+## By Platform
+- Greenhouse: 28
+- Lever: 12
+- Ashby: 5
+- Workable: 2
+
+## By Score
+- Priority (90+): 8
+- Strong Match (85-89): 15
+- Good Match (80-84): 24
+
+## Top 10 Opportunities
+
+| Score | Company | Role | Platform |
+|-------|---------|------|----------|
+| 94 | Grafana Labs | Staff Platform Engineer | Greenhouse |
+| 92 | Temporal | Staff Infrastructure Engineer | Lever |
+| ... | ... | ... | ... |
+
+## New This Session
+- [Job 1]
+- [Job 2]
+
+## Search Queries to Try Next
+- [Untried query 1]
+- [Untried query 2]
+```
+
+## Step 7: Track Progress
+
+Note in summary:
+- Queries that yielded good results (reuse variations)
+- Queries that yielded nothing (don't repeat)
+- Companies with multiple openings (monitor)
+- Platforms with more untapped potential
+
+## Remember
+
+- **APPEND** to existing catalog, never overwrite
+- **CHECK** for duplicate URLs before adding
+- **FETCH** full job pages, not just search snippets
+- **RESEARCH** companies not already in companies.json
+- **SCORE** consistently using the rubric
+- **PREPARE** specific, tailored application materials
+- **VARY** search queries and platforms each session

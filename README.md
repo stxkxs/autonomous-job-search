@@ -1,6 +1,6 @@
 # autonomous-job-search
 
-> Autonomous job search agent powered by Claude. Finds Greenhouse jobs, researches companies, and prepares application materials - you just apply.
+> Autonomous job search agent powered by Claude. Searches multiple ATS platforms, researches companies, and prepares application materials - you just apply.
 
 ## How It Works
 
@@ -13,7 +13,7 @@ flowchart LR
     end
 
     subgraph Agent["Autonomous Agent Loop"]
-        B[Search Greenhouse<br/>for jobs] --> C[Fetch job<br/>details]
+        B[Search ATS platforms<br/>for jobs] --> C[Fetch job<br/>details]
         C --> D[Research<br/>company]
         D --> E[Score &<br/>prepare materials]
         E --> F[Save to<br/>catalog]
@@ -29,6 +29,19 @@ flowchart LR
     F --> G
     F --> H
 ```
+
+## Supported ATS Platforms
+
+The agent searches across multiple Applicant Tracking Systems:
+
+| Platform | Domain | Companies Using It |
+|----------|--------|-------------------|
+| **Greenhouse** | `boards.greenhouse.io` | Stripe, Airbnb, Datadog, Figma, Notion, Cloudflare, Discord |
+| **Lever** | `jobs.lever.co` | Netflix, Shopify, Twitch, Lyft, Atlassian |
+| **Ashby** | `jobs.ashbyhq.com` | Ramp, OpenAI, Deel, Vercel, Linear |
+| **Workable** | `apply.workable.com` | Various startups and mid-size companies |
+
+You can configure the agent to focus on specific platforms or search all of them.
 
 ## Architecture
 
@@ -120,11 +133,13 @@ sequenceDiagram
     loop Until complete or max iterations
         Agent->>Claude: Send prompt (initializer or coding)
 
-        Claude->>Web: WebSearch: site:greenhouse.io "java" "senior"
+        Claude->>Web: WebSearch: site:greenhouse.io "python" "senior"
+        Claude->>Web: WebSearch: site:lever.co "backend" "staff"
+        Claude->>Web: WebSearch: site:ashbyhq.com "platform"
         Web-->>Claude: Job listing URLs
 
         loop For each job
-            Claude->>Web: WebFetch: greenhouse.io/company/job/123
+            Claude->>Web: WebFetch: boards.greenhouse.io/company/jobs/123
             Web-->>Claude: Job details, requirements, salary
 
             Claude->>Web: WebSearch: "Company" glassdoor rating
@@ -156,26 +171,6 @@ The `prompts/` directory defines your job search. Files are gitignored to keep y
 | `app_spec.txt` | **Your profile** - name, location, skills, experience, target roles |
 | `initializer_prompt.md` | **First run** - how to search, what companies to target |
 | `coding_prompt.md` | **Continuation** - how to add more jobs without duplicates |
-
-### Example: app_spec.txt
-
-```markdown
-# Job Catalog - Your Name
-
-## Candidate Profile
-**Location:** Your City (Remote or local)
-**Experience:** X+ years, certifications, notable companies
-
-## Core Skills
-- Languages: Java, Python, Go
-- Cloud: AWS, Kubernetes, Terraform
-- Specialty: Platform Engineering, SRE
-
-## Target Roles
-1. Staff Platform Engineer
-2. Senior SRE
-3. Principal Engineer
-```
 
 ### CLI Options
 
@@ -211,38 +206,36 @@ output/
 {
   "id": "job-001",
   "job_url": "https://boards.greenhouse.io/company/jobs/12345",
+  "ats_platform": "greenhouse",
   "company": "TechCorp",
   "role": "Senior Platform Engineer",
   "location": "Remote (US)",
   "salary": "$180k-220k",
+  "found_date": "2025-01-15",
   "match_score": 92,
-  "requirements": ["Java", "AWS", "Kubernetes", "5+ years"],
-  "tech_stack": ["Java", "Spring Boot", "AWS", "Terraform"],
+  "requirements": ["Python", "AWS", "Kubernetes", "5+ years"],
+  "tech_stack": ["Python", "Go", "AWS", "Terraform", "Kubernetes"],
+  "responsibilities": [
+    "Design and build internal developer platform",
+    "Lead migration from ECS to Kubernetes",
+    "Establish SLOs and observability standards"
+  ],
   "glassdoor_rating": "4.2",
   "company_size": "500-1000",
-  "funding": "Series C",
-  "why_good_fit": "Strong platform focus, uses your exact stack",
+  "funding": "Series C ($120M)",
+  "why_good_fit": "Strong platform focus using your exact stack. Team is building greenfield K8s platform - matches your migration experience at Previous Co.",
   "experience_to_highlight": [
-    "Built multi-tenant K8s platform at Previous Co",
-    "AWS Solutions Architect Pro certification"
+    "Led EKS platform serving 200+ microservices at Previous Co",
+    "AWS Solutions Architect Pro certification",
+    "Built self-service deployment pipeline reducing deploy time 80%"
   ],
   "questions_to_ask": [
-    "What's the platform team's relationship with product teams?",
-    "How do you handle multi-region deployments?"
+    "What's the current state of the K8s migration and timeline?",
+    "How does the platform team interact with product engineering?",
+    "What observability stack are you using or evaluating?"
   ]
 }
 ```
-
-## Why Greenhouse Only?
-
-Greenhouse is a popular ATS among well-funded tech companies:
-
-- **Consistent URLs** - All jobs at `boards.greenhouse.io/company/jobs/id` making them easy to search and scrape
-- **Quality signal** - Greenhouse costs money, so companies using it tend to be better resourced
-- **Predictable format** - Job descriptions follow a consistent structure
-- **Wide adoption** - Used by Stripe, Airbnb, Datadog, Figma, Notion, Cloudflare, Discord, and many more
-
-You can modify the prompts to target other ATS platforms (Lever, Ashby, Workday) if needed.
 
 ## Resuming & Iteration
 
@@ -258,6 +251,22 @@ python -m src.main --project-dir ./output
 # The agent reads existing jobs.json and avoids duplicates
 ```
 
+## Web UI
+
+The project includes a Next.js frontend for browsing your job catalog:
+
+```bash
+cd ui
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to:
+- Browse all discovered jobs with filtering and sorting
+- View match scores and detailed job information
+- See analytics on tech stacks, locations, and companies
+- Track jobs across different ATS platforms
+
 ## Project Structure
 
 ```
@@ -272,6 +281,7 @@ autonomous-job-search/
 ├── prompts/
 │   ├── *.example     # Template files (committed)
 │   └── *.txt/*.md    # Your config (gitignored)
+├── ui/               # Next.js job catalog viewer
 ├── tests/
 └── output/           # Generated job catalog
 ```

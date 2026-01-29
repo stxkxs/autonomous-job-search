@@ -1,204 +1,301 @@
-# Job Catalog Builder - Greenhouse Jobs Only
+# Job Catalog Builder - Initialize
 
-Build a job catalog for a **Senior/Staff Engineer** with X+ years experience. Focus on **Greenhouse ATS only**.
+Build a comprehensive job catalog for a **Staff/Senior Platform Engineer** with 12+ years experience. Search across **multiple ATS platforms**.
 
 ## Candidate Profile
 
-**Location:** Your City, State (Remote-first or local, USA-based companies only)
+**Name:** Morgan Chen
+**Location:** Austin, TX (Remote US preferred, Austin/SF/NYC hybrid OK)
+**Work Auth:** US Citizen
 
-**Experience:**
-- X+ years software engineering
-- Relevant certifications
-- Previous Company 1 - Role (key achievements)
-- Previous Company 2 - Role (key achievements)
-- Previous Company 3 - Role (key achievements)
+**Experience Highlights:**
+- 12+ years software engineering, 6 focused on platform/infrastructure
+- AWS Solutions Architect Pro, CKA certified
+- Vercel (Current) - Staff Platform Engineer, built deployment platform for 50k+ devs
+- Stripe - Senior Infrastructure Engineer, core K8s platform contributor
+- Datadog - Built distributed tracing pipeline (2M spans/sec)
+- Capital One - Monolith to microservices migration
 
-**Core Skills:**
-- Primary programming language(s)
-- Cloud platform expertise
-- Container/orchestration tools
-- Specialty areas (Platform, SRE, DevOps, etc.)
-- Observability tools
-- Infrastructure as Code tools
-- Secondary languages
+**Core Stack:**
+- Languages: Go (6y), Python (10y), TypeScript (4y)
+- Cloud: AWS (expert), GCP (proficient), Kubernetes, Terraform
+- Platform: GitHub Actions, ArgoCD, Datadog, Prometheus, OpenTelemetry
+- Data: PostgreSQL, Redis, DynamoDB, Kafka
 
 **Target Roles:**
-- Staff/Senior Software Engineer
-- Staff/Senior Platform Engineer
-- Senior SRE / Site Reliability Engineer
-- Senior DevOps Engineer
-- Principal Engineer
+1. Staff Platform Engineer
+2. Staff Infrastructure Engineer
+3. Staff Software Engineer, Backend (distributed systems)
+4. Principal Engineer
+5. Engineering Manager, Platform (if technical)
 
-## CRITICAL: Greenhouse Only, USA Remote/Your City
+## IMPORTANT: Multi-ATS Search
 
-**ONLY save jobs that:**
-1. Use Greenhouse ATS (`greenhouse.io` in URL)
-2. Are Remote (US) OR located in Your City
-3. Are with USA-based companies
+Search ALL of these ATS platforms - don't limit to just one:
 
-## Step 1: Setup (Preserve Existing Data)
+| Platform | Domain | Search Pattern |
+|----------|--------|----------------|
+| Greenhouse | `boards.greenhouse.io` | `site:boards.greenhouse.io` OR `site:greenhouse.io` |
+| Lever | `jobs.lever.co` | `site:jobs.lever.co` OR `site:lever.co` |
+| Ashby | `jobs.ashbyhq.com` | `site:jobs.ashbyhq.com` OR `site:ashbyhq.com` |
+| Workable | `apply.workable.com` | `site:apply.workable.com` OR `site:workable.com` |
+
+## Step 1: Setup Directory Structure
 
 ```bash
 mkdir -p data/jobs data/companies
-# Only create if doesn't exist - NEVER overwrite
 [ -f data/jobs/jobs.json ] || echo "[]" > data/jobs/jobs.json
+[ -f data/companies/companies.json ] || echo "{}" > data/companies/companies.json
 ```
 
-**IMPORTANT:** Always READ existing `data/jobs/jobs.json` first and APPEND new jobs. Never overwrite existing entries. Check for duplicates by job_url before adding.
+## Step 2: Search for Jobs (Multi-Platform)
 
-## Step 2: Search for Jobs
+Use **WebSearch** with varied queries across ALL platforms:
 
-Use **WebSearch** with queries tailored to your skills:
-
-### Platform/SRE Roles
+### Greenhouse Searches
 ```
-site:boards.greenhouse.io "staff platform engineer" remote
-site:boards.greenhouse.io "senior SRE" remote USA
-site:boards.greenhouse.io "site reliability engineer" "[cloud]" "[orchestration]"
-site:greenhouse.io "platform engineer" "[language]" remote
+site:boards.greenhouse.io "staff platform engineer" remote 2025
+site:boards.greenhouse.io "infrastructure engineer" "kubernetes" remote
+site:greenhouse.io "developer experience" "golang" remote
+site:boards.greenhouse.io "staff engineer" "AWS" "terraform" remote
 ```
 
-### Backend/Software Engineer
+### Lever Searches
 ```
-site:boards.greenhouse.io "staff software engineer" "[language]" remote
-site:boards.greenhouse.io "senior backend engineer" "[framework]" remote
-site:boards.greenhouse.io "staff engineer" "[cloud]" "[orchestration]" remote
-site:greenhouse.io "senior [language] engineer" remote USA
-```
-
-### DevOps/Infrastructure
-```
-site:boards.greenhouse.io "senior devops engineer" "[cloud]" remote
-site:boards.greenhouse.io "infrastructure engineer" "[IaC tool]" "[orchestration]"
-site:greenhouse.io "devops" "[cloud service]" remote
+site:jobs.lever.co "staff platform engineer" remote
+site:jobs.lever.co "infrastructure" "kubernetes" remote
+site:lever.co "backend engineer" "distributed systems" remote
+site:jobs.lever.co "SRE" "golang" remote
 ```
 
-### Location Specific
+### Ashby Searches
 ```
-site:boards.greenhouse.io "[your city]" engineer
-site:greenhouse.io "[your city]" software
+site:jobs.ashbyhq.com "platform engineer" remote
+site:jobs.ashbyhq.com "infrastructure" "AWS" remote
+site:ashbyhq.com "staff engineer" remote
+site:jobs.ashbyhq.com "devops" "kubernetes" remote
 ```
 
-### Top Companies Known to Use Greenhouse
+### Workable Searches
 ```
-site:boards.greenhouse.io/stripe engineer
-site:boards.greenhouse.io/datadog
-site:boards.greenhouse.io/cloudflare
-site:boards.greenhouse.io/figma
-site:boards.greenhouse.io/notion
-site:boards.greenhouse.io/plaid
-site:boards.greenhouse.io/ramp
+site:apply.workable.com "platform engineer" remote
+site:apply.workable.com "infrastructure" "terraform" remote
+site:workable.com "backend engineer" "golang" remote
+```
+
+### Company-Specific Searches
+```
+site:boards.greenhouse.io/grafana
+site:boards.greenhouse.io/temporal
+site:jobs.lever.co/netlify
+site:jobs.ashbyhq.com/ramp
+site:jobs.ashbyhq.com/vercel
+site:boards.greenhouse.io/hashicorp
+```
+
+### General Tech Searches (will find various ATS)
+```
+"staff platform engineer" remote kubernetes 2025
+"infrastructure engineer" golang terraform remote
+"developer experience engineer" remote
 ```
 
 ## Step 3: For Each Job Found
 
-Use **WebFetch** on the Greenhouse URL to extract:
+### A. Verify ATS Platform
+Check the URL to identify the platform:
+- `greenhouse.io` → Greenhouse
+- `lever.co` → Lever
+- `ashbyhq.com` → Ashby
+- `workable.com` → Workable
 
-### Required Info
-- Job URL (MUST be greenhouse.io)
-- Company name
-- Role/Title
-- Location (must be Remote US or Your City)
+If URL is company careers page, look for Apply button linking to one of these ATS platforms.
+
+### B. Fetch Full Job Details
+Use **WebFetch** to extract:
+- Complete job description
+- All requirements (required vs nice-to-have)
+- Tech stack mentioned
+- Team information
 - Salary range (if listed)
+- Location requirements
 
-### Job Details
-- Responsibilities
-- Requirements (years exp, skills)
-- Nice-to-have
-- Tech stack
-- Team size/structure
+### C. Research Company
+For each new company, search:
+```
+"Company Name" glassdoor rating engineering
+"Company Name" crunchbase funding series
+"Company Name" engineering blog tech stack
+"Company Name" layoffs 2024 2025
+"Company Name" linkedin employees
+```
 
-### Company Research
-Search for each company:
-- `"Company Name" glassdoor rating engineering`
-- `"Company Name" crunchbase funding`
-- `"Company Name" engineering blog culture`
+Save company info to `data/companies/companies.json`.
 
-## Step 4: Score Each Job
+## Step 4: Score Each Job (0-100)
 
-Score 0-100 based on match to candidate profile:
+### 90+ (Priority)
+- Staff/Principal level explicitly stated
+- Platform, Infrastructure, or DevEx focus
+- Remote US or Austin-based
+- Tech stack overlap >80% (Go, K8s, AWS, Terraform)
+- Strong company signals (Series B+, good Glassdoor)
 
-**High Score (85+):**
-- Strong skill overlap with requirements
-- Role focus matches specialty
-- Appropriate seniority level
-- Remote US or your city
-- Good company reputation
+### 85-89 (Strong Match)
+- Senior with Staff potential
+- Related focus (SRE, Backend infrastructure)
+- Most core skills match
+- Interesting technical challenges
 
-**Medium Score (70-84):**
-- Some skill overlap
-- May need to stretch on some requirements
+### 80-84 (Good Match)
+- Senior level
+- Partial stack overlap
+- Would need to ramp on 1-2 technologies
+- Decent company
 
-**Skip (< 70):**
-- Wrong location
-- Wrong seniority level
-- Minimal skill overlap
+### Below 80 (Skip or Note)
+- Mid-level roles
+- Poor location fit
+- Minimal stack overlap
+- Company red flags
 
 ## Step 5: Prepare Application Materials
 
-For each job, draft:
+For each job scoring 80+, prepare:
 
 ### Why This Company
 ```
-[Connect their mission/product to your interests]
+[2-3 sentences connecting their mission/product to candidate's interests and values]
 ```
 
-### Key Experience to Highlight
+### Why This Role
 ```
-- Company 1: [relevant achievement]
-- Company 2: [relevant achievement]
-- Company 3: [relevant achievement]
-- Certifications: [which apply]
+[How specific experience maps to their stated needs]
+```
+
+### Experience to Highlight
+```
+- [Vercel achievement relevant to this role]
+- [Stripe achievement relevant to this role]
+- [Datadog achievement relevant to this role]
+- [Relevant certification]
 ```
 
 ### Questions to Ask
 ```
-- [About team/architecture]
-- [About growth/challenges]
+- [Technical question showing depth]
+- [Question about team/culture]
+- [Question showing you researched them]
 ```
 
 ## Step 6: Save to Catalog
 
-Save to `data/jobs/jobs.json`:
+Write to `data/jobs/jobs.json`:
 
 ```json
 [
   {
     "id": "job-001",
-    "job_url": "https://boards.greenhouse.io/company/jobs/12345",
-    "company": "Company Name",
+    "job_url": "https://boards.greenhouse.io/grafana/jobs/12345",
+    "ats_platform": "greenhouse",
+    "company": "Grafana Labs",
     "role": "Staff Platform Engineer",
     "location": "Remote (US)",
-    "salary": "$180k-220k",
-    "found_date": "YYYY-MM-DD",
-    "match_score": 92,
-    "requirements": ["X+ years", "Skill 1", "Skill 2", "Skill 3"],
-    "tech_stack": ["Tech 1", "Tech 2", "Tech 3"],
-    "responsibilities": ["Lead platform initiatives", "..."],
-    "company_size": "500-1000",
-    "glassdoor_rating": "4.3",
-    "funding": "Series D",
-    "why_good_fit": "Strong skill overlap, background matches",
-    "experience_to_highlight": [
-      "Company 1: Relevant achievement",
-      "Company 2: Relevant achievement",
-      "Certifications: Which apply"
+    "salary": "$220k-280k + equity",
+    "found_date": "2025-01-15",
+    "match_score": 94,
+    "requirements": [
+      "8+ years software engineering",
+      "Expert in Kubernetes and container orchestration",
+      "Strong Go or Python experience",
+      "Experience building internal developer platforms"
     ],
-    "questions_to_ask": ["Team structure?", "Tech stack decisions?"]
+    "tech_stack": ["Go", "Kubernetes", "Prometheus", "Grafana", "AWS", "Terraform"],
+    "responsibilities": [
+      "Design and build internal developer platform",
+      "Lead Kubernetes platform evolution",
+      "Mentor engineers and establish best practices"
+    ],
+    "company_size": "800-1000",
+    "glassdoor_rating": "4.5",
+    "funding": "Series D ($240M)",
+    "why_good_fit": "Grafana is the observability leader - directly relevant to Datadog experience. Platform role building internal tools matches Vercel work. Go + K8s + Prometheus is exact stack.",
+    "experience_to_highlight": [
+      "Vercel: Built deployment platform serving 50k developers, directly relevant to internal platform work",
+      "Stripe: Core K8s platform contributor, reduced deployment failures 73%",
+      "Datadog: Built tracing pipeline at scale, deep observability knowledge",
+      "CKA certified, AWS SA Pro"
+    ],
+    "questions_to_ask": [
+      "How does the platform team balance supporting Grafana Cloud vs self-hosted?",
+      "What's the current state of your internal developer platform?",
+      "How do you approach observability for your own infrastructure?"
+    ]
+  },
+  {
+    "id": "job-002",
+    "job_url": "https://jobs.lever.co/temporal/67890",
+    "ats_platform": "lever",
+    "company": "Temporal",
+    "role": "Senior Infrastructure Engineer",
+    "location": "Remote (US)",
+    "salary": "$190k-240k",
+    "found_date": "2025-01-15",
+    "match_score": 88,
+    "requirements": [
+      "5+ years infrastructure experience",
+      "Kubernetes expertise",
+      "Go or Java preferred",
+      "AWS experience required"
+    ],
+    "tech_stack": ["Go", "Kubernetes", "AWS", "Cassandra", "Temporal"],
+    "responsibilities": [
+      "Scale Temporal Cloud infrastructure",
+      "Build deployment automation",
+      "On-call rotation for production systems"
+    ],
+    "company_size": "200-300",
+    "glassdoor_rating": "4.3",
+    "funding": "Series B ($120M)",
+    "why_good_fit": "Temporal is fascinating workflow orchestration - would love to work on the infrastructure powering it. Strong Go shop, K8s native. Smaller team means more ownership.",
+    "experience_to_highlight": [
+      "Vercel: Deployment automation at scale",
+      "Stripe: Production K8s platform experience",
+      "Go expertise from multiple projects"
+    ],
+    "questions_to_ask": [
+      "What's the biggest infrastructure scaling challenge right now?",
+      "How does the infra team work with the Temporal core team?",
+      "What does on-call look like?"
+    ]
   }
 ]
 ```
 
-## Step 7: Create Summary
+## Step 7: Generate Summary
 
-Create `jobs_summary.md` with top opportunities ranked by match score.
+Create `jobs_summary.md` with:
+- Total jobs found by platform
+- Top 10 opportunities by match score
+- Breakdown by role type
+- Companies discovered
+- Next search queries to try
 
-## Priority
+## Priority Order
 
-1. **SEARCH** greenhouse.io with varied queries
-2. **VERIFY** Remote US or your city location
-3. **FETCH** full job details
-4. **SCORE** based on skill match
-5. **RESEARCH** company reputation
-6. **PREPARE** application talking points
-7. **SAVE** with real Greenhouse URLs
+1. **SEARCH** all ATS platforms with varied queries
+2. **VERIFY** location (Remote US or Austin)
+3. **FETCH** complete job details
+4. **RESEARCH** company reputation and funding
+5. **SCORE** based on match criteria
+6. **PREPARE** tailored application materials
+7. **SAVE** to structured JSON catalog
+
+## Remember
+
+- Search ALL platforms (Greenhouse, Lever, Ashby, Workable)
+- Real, verified job URLs only
+- Full job details, not just titles
+- Company research for each new company
+- Specific, tailored application prep
+- Check for duplicates before adding

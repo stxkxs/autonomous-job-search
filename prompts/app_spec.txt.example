@@ -1,59 +1,124 @@
-# Job Catalog - Your Name
+# Job Catalog - Morgan Chen
 
 ## Candidate Profile
 
-**Name:** Your Name
-**Location:** Your City, State
-**Target:** Remote (US) or Your City local, USA-based companies
-**ATS:** Greenhouse only
+**Name:** Morgan Chen
+**Location:** Austin, TX
+**Target:** Remote (US) preferred, Austin/SF/NYC hybrid acceptable, USA-based companies only
+**Work Authorization:** US Citizen
 
 ## Experience Summary
 
-- **X+ years** software engineering
-- **Certifications:** List your relevant certifications
-- **Recent:** Your most recent role and key accomplishments
-- **Previous:** Previous notable roles and achievements
+- **12+ years** software engineering, last 6 focused on platform/infrastructure
+- **AWS Solutions Architect Professional** (2023), **CKA** Certified Kubernetes Administrator (2022)
+- **Vercel** - Staff Platform Engineer (2022-Present): Led developer experience initiatives, built deployment platform serving 50k+ developers
+- **Stripe** - Senior Infrastructure Engineer (2019-2022): Core contributor to internal Kubernetes platform, reduced deployment failures 73%
+- **Datadog** - Software Engineer (2016-2019): Built distributed tracing pipeline processing 2M spans/sec
+- **Capital One** - Software Engineer (2012-2016): Backend services for mobile banking, migrated monolith to microservices
 
 ## Core Technical Skills
 
-### Languages
-- Your primary language(s), secondary language(s)
+### Languages (Strong)
+- **Go** - 6 years, built multiple production CLI tools and backend services
+- **Python** - 10 years, automation, data pipelines, internal tooling
+- **TypeScript** - 4 years, full-stack when needed, SDK development
+
+### Languages (Proficient)
+- Java, Rust, Bash
 
 ### Cloud & Infrastructure
-- Cloud platforms (AWS, GCP, Azure)
-- Container orchestration (Kubernetes, ECS, etc.)
-- Infrastructure as Code tools
+- **AWS** (Expert): EKS, Lambda, DynamoDB, SQS/SNS, CloudFormation, CDK
+- **GCP** (Proficient): GKE, Cloud Run, BigQuery
+- **Kubernetes**: Cluster administration, custom controllers, Helm, Kustomize, ArgoCD
+- **Terraform**: Multi-environment IaC, module development, Atlantis workflows
 
 ### Platform & Observability
-- Monitoring and observability tools
-- Logging and tracing systems
+- **CI/CD**: GitHub Actions, CircleCI, BuildKite, custom pipeline development
+- **Observability**: Datadog, Prometheus/Grafana, OpenTelemetry, Jaeger
+- **Service Mesh**: Istio, Linkerd
+- **Secrets/Config**: Vault, AWS Secrets Manager, ConfigMaps
 
-### Frameworks
-- Backend frameworks
-- Frontend frameworks (if applicable)
-- Testing frameworks
+### Databases & Messaging
+- PostgreSQL, Redis, DynamoDB, Kafka, RabbitMQ
 
-## Target Roles
+## Target Roles (in priority order)
 
-1. Your Primary Target Role
-2. Secondary Target Role
-3. Third Target Role
+1. **Staff Platform Engineer** - Building internal developer platforms, improving developer velocity
+2. **Staff Infrastructure Engineer** - Core infrastructure, reliability, scalability
+3. **Staff Software Engineer, Backend** - Distributed systems, API platforms
+4. **Principal Engineer** - Technical leadership across multiple teams
+5. **Engineering Manager, Platform** - Would consider if primarily technical
 
-## Search Criteria
+## Company Preferences
 
-### Must Have
-- Greenhouse ATS application
-- Remote (US) OR Your City
-- USA-based company
-- Appropriate seniority level
+### Ideal
+- Series B+ startups or established tech companies
+- Strong engineering culture (eng blog, open source contributions)
+- Platform/infrastructure is a first-class citizen, not an afterthought
+- Remote-friendly with async communication culture
 
-### Strong Match Skills
-- Your strongest skill combinations
-- Technologies you excel at
+### Industries of Interest
+- Developer tools, DevOps/Infrastructure
+- Fintech, Payments
+- Cloud/SaaS platforms
+- AI/ML infrastructure (not research roles)
 
-### Good Match Skills
-- Secondary skills
-- Related technologies
+### Avoid
+- Crypto/Web3
+- Defense contractors
+- Companies with poor Glassdoor reviews (<3.5)
+- Roles requiring >25% travel
+
+## Search Strategy
+
+### ATS Platforms to Search
+- Greenhouse (primary)
+- Lever
+- Ashby
+- Workable
+
+### High-Value Search Queries
+```
+site:boards.greenhouse.io "staff platform engineer" remote
+site:jobs.lever.co "infrastructure engineer" "kubernetes" remote
+site:jobs.ashbyhq.com "platform" "golang" remote
+site:greenhouse.io "developer experience" engineer remote
+"staff engineer" "internal tools" site:greenhouse.io
+```
+
+### Target Companies (Known to have platform roles)
+- Vercel competitors: Netlify, Railway, Render, Fly.io
+- Developer tools: LaunchDarkly, Postman, Snyk, Grafana Labs
+- Fintech: Ramp, Brex, Mercury, Plaid
+- Infrastructure: HashiCorp, Temporal, CockroachDB, PlanetScale
+
+## Scoring Criteria
+
+### 90+ (Priority - Apply Immediately)
+- Staff/Principal level
+- Platform, Infrastructure, or Developer Experience focus
+- Remote US or Austin
+- $250k+ total comp indicated
+- Company I've heard of or strong funding
+- Tech stack overlap >80%
+
+### 85-89 (Strong Match)
+- Senior with clear Staff trajectory
+- Adjacent focus (SRE, Backend with platform component)
+- Hybrid in preferred cities
+- $200k+ range
+- Good company signals (funding, glassdoor, eng blog)
+
+### 80-84 (Good Match)
+- Senior level, interesting technical challenges
+- Some stack overlap
+- Would need to learn 1-2 new major technologies
+
+### Below 80 (Skip)
+- Mid-level or below
+- On-site only outside preferred cities
+- Minimal stack overlap
+- Red flags (poor reviews, unclear role)
 
 ## Output Format
 
@@ -63,22 +128,29 @@ Each job in `data/jobs/jobs.json` should include:
 {
   "id": "job-XXX",
   "job_url": "https://boards.greenhouse.io/...",
+  "ats_platform": "greenhouse|lever|ashby|workable",
   "company": "...",
   "role": "...",
-  "location": "Remote (US) | Your City",
-  "salary": "$XXXk-$XXXk",
+  "location": "Remote (US) | Austin, TX | Hybrid",
+  "salary": "$XXXk-$XXXk + equity",
   "found_date": "YYYY-MM-DD",
   "match_score": 85,
-  "requirements": [...],
-  "tech_stack": [...],
-  "company_info": {
-    "description": "...",
-    "size": "...",
-    "glassdoor": "...",
-    "funding": "..."
-  },
-  "why_good_fit": "...",
-  "experience_to_highlight": [...],
-  "questions_to_ask": [...]
+  "status": "new|applied|interviewing|rejected",
+  "requirements": ["5+ years", "Go", "Kubernetes", ...],
+  "tech_stack": ["Go", "AWS", "Terraform", ...],
+  "responsibilities": ["Build X", "Lead Y", ...],
+  "company_size": "100-500",
+  "glassdoor_rating": "4.2",
+  "funding": "Series C ($XXM)",
+  "why_good_fit": "Specific reasons this matches my background...",
+  "experience_to_highlight": [
+    "Vercel: Built deployment platform serving 50k developers",
+    "Stripe: Reduced K8s deployment failures 73%",
+    "CKA certification directly relevant"
+  ],
+  "questions_to_ask": [
+    "What does the platform team's roadmap look like for next year?",
+    "How do you balance platform standardization vs team autonomy?"
+  ]
 }
 ```
