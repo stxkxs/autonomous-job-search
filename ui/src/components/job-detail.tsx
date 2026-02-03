@@ -3,43 +3,96 @@
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Building2,
-  MapPin,
-  DollarSign,
   ExternalLink,
-  Users,
-  Star,
   X,
+  FileText,
   Briefcase,
-  CheckCircle,
-  HelpCircle,
-  Lightbulb,
-  Trophy,
-  BadgeCheck,
+  Calendar,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Job, getScoreColor, getScoreBgColor } from "@/types/job";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  panelVariants,
-  sectionReveal,
-  sectionItem,
-  listItem,
-  springs,
-} from "@/lib/animations";
+  Job,
+  getScoreColor,
+  getScoreBgColor,
+  type ApplicationStatus,
+} from "@/types/job";
+import { panelVariants, springs } from "@/lib/animations";
+import { useApplication } from "@/hooks/use-application";
+import { useInterviews } from "@/hooks/use-interviews";
+import { OverviewTab } from "@/components/job-detail/overview-tab";
+import { ApplicationTab } from "@/components/job-detail/application-tab";
+import { InterviewsTab } from "@/components/job-detail/interviews-tab";
 
 interface JobDetailProps {
   job: Job | null;
   onClose: () => void;
+  onStatusChange?: (status: ApplicationStatus) => void;
+  updating?: boolean;
+  inSheet?: boolean;
 }
 
-export function JobDetail({ job, onClose }: JobDetailProps) {
+export function JobDetail({ job, onClose, onStatusChange, updating, inSheet }: JobDetailProps) {
+  // Hooks for application and interviews data
+  const {
+    application,
+    interviews: appInterviews,
+    updateApplication,
+    refetch: refetchApplication,
+  } = useApplication(job?.dbId);
+
+  const {
+    interviews,
+    addInterview,
+    updateInterview,
+    deleteInterview,
+    refetch: refetchInterviews,
+  } = useInterviews(application?.id);
+
+  // Merge interviews from application and from hook
+  const allInterviews = interviews.length > 0 ? interviews : appInterviews;
+
   if (!job) return null;
 
   const scoreColor = getScoreColor(job.match_score);
   const scoreBgColor = getScoreBgColor(job.match_score);
+
+  const containerClass = inSheet ? "h-full" : "h-full";
+
+  const cardClass = inSheet
+    ? "h-full border-0 shadow-none bg-transparent"
+    : "h-full border-0 shadow-lg";
+
+  const handleApplicationChange = async (data: Parameters<typeof updateApplication>[0]) => {
+    await updateApplication(data);
+    // Also update the parent component's status if it changed
+    if (data.status && onStatusChange) {
+      onStatusChange(data.status);
+    }
+    refetchApplication();
+  };
+
+  const handleAddInterview = async (data: Parameters<typeof addInterview>[0]) => {
+    const newInterview = await addInterview(data);
+    refetchInterviews();
+    refetchApplication();
+    return newInterview;
+  };
+
+  const handleUpdateInterview = async (id: number, data: Parameters<typeof updateInterview>[1]) => {
+    const updated = await updateInterview(id, data);
+    refetchInterviews();
+    refetchApplication();
+    return updated;
+  };
+
+  const handleDeleteInterview = async (id: number) => {
+    await deleteInterview(id);
+    refetchInterviews();
+    refetchApplication();
+  };
 
   return (
     <AnimatePresence mode="wait">
@@ -49,9 +102,9 @@ export function JobDetail({ job, onClose }: JobDetailProps) {
         initial="initial"
         animate="animate"
         exit="exit"
-        className="h-full"
+        className={containerClass}
       >
-        <Card className="h-full border-0 shadow-lg">
+        <Card className={cardClass}>
           <CardHeader className="pb-4">
             <motion.div
               className="flex items-start justify-between"
@@ -77,281 +130,101 @@ export function JobDetail({ job, onClose }: JobDetailProps) {
                   </div>
                 </div>
               </div>
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                transition={springs.snappy}
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="lg:hidden"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </motion.div>
-            </motion.div>
-          </CardHeader>
-
-          <ScrollArea className="h-[calc(100vh-280px)] scrollbar-thin">
-            <CardContent className="space-y-6">
-              {/* Quick Info */}
-              <motion.div
-                className="grid grid-cols-2 gap-3"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ ...springs.smooth, delay: 0.15 }}
-              >
-                {[
-                  {
-                    icon: MapPin,
-                    value: job.location || "Not specified",
-                  },
-                  {
-                    icon: DollarSign,
-                    value: job.salary || "Not disclosed",
-                  },
-                  {
-                    icon: Users,
-                    value: job.company_size || "Unknown",
-                  },
-                  {
-                    icon: Star,
-                    value: `Glassdoor: ${job.glassdoor_rating || "N/A"}`,
-                  },
-                ].map(({ icon: Icon, value }, index) => (
-                  <motion.div
-                    key={index}
-                    className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                    transition={springs.snappy}
-                  >
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm truncate">{value}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              {/* Funding */}
-              {job.funding && (
+              {!inSheet && (
                 <motion.div
-                  className="p-3 rounded-lg bg-violet-500/10 border border-violet-500/20"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ ...springs.smooth, delay: 0.2 }}
-                >
-                  <div className="flex items-center gap-2 text-sm">
-                    <BadgeCheck className="h-4 w-4 text-violet-500" />
-                    <span className="font-medium text-violet-700 dark:text-violet-300">
-                      {job.funding}
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-
-              <Separator />
-
-              {/* Why Good Fit */}
-              {job.why_good_fit && (
-                <motion.div
-                  variants={sectionReveal}
-                  initial="initial"
-                  animate="animate"
-                >
-                  <motion.h4
-                    variants={sectionItem}
-                    className="font-semibold mb-3 flex items-center gap-2"
-                  >
-                    <Trophy className="h-4 w-4 text-amber-500" />
-                    Why This Is a Good Fit
-                  </motion.h4>
-                  <motion.p
-                    variants={sectionItem}
-                    className="text-sm text-muted-foreground leading-relaxed"
-                  >
-                    {job.why_good_fit}
-                  </motion.p>
-                </motion.div>
-              )}
-
-              {/* Tech Stack */}
-              {job.tech_stack && job.tech_stack.length > 0 && (
-                <motion.div
-                  variants={sectionReveal}
-                  initial="initial"
-                  animate="animate"
-                >
-                  <motion.h4
-                    variants={sectionItem}
-                    className="font-semibold mb-3 flex items-center gap-2"
-                  >
-                    <Briefcase className="h-4 w-4 text-blue-500" />
-                    Tech Stack
-                  </motion.h4>
-                  <motion.div variants={sectionItem} className="flex flex-wrap gap-2">
-                    {job.tech_stack.map((tech, i) => (
-                      <motion.div
-                        key={tech}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ ...springs.snappy, delay: i * 0.03 }}
-                      >
-                        <Badge variant="secondary">{tech}</Badge>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                </motion.div>
-              )}
-
-              {/* Requirements */}
-              {job.requirements && job.requirements.length > 0 && (
-                <motion.div
-                  variants={sectionReveal}
-                  initial="initial"
-                  animate="animate"
-                >
-                  <motion.h4
-                    variants={sectionItem}
-                    className="font-semibold mb-3 flex items-center gap-2"
-                  >
-                    <CheckCircle className="h-4 w-4 text-emerald-500" />
-                    Requirements
-                  </motion.h4>
-                  <motion.ul className="space-y-2">
-                    {job.requirements.map((req, i) => (
-                      <motion.li
-                        key={i}
-                        variants={listItem}
-                        className="flex items-start gap-2 text-sm text-muted-foreground"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
-                        {req}
-                      </motion.li>
-                    ))}
-                  </motion.ul>
-                </motion.div>
-              )}
-
-              {/* Responsibilities */}
-              {job.responsibilities && job.responsibilities.length > 0 && (
-                <motion.div
-                  variants={sectionReveal}
-                  initial="initial"
-                  animate="animate"
-                >
-                  <motion.h4
-                    variants={sectionItem}
-                    className="font-semibold mb-3 flex items-center gap-2"
-                  >
-                    <Briefcase className="h-4 w-4 text-violet-500" />
-                    Responsibilities
-                  </motion.h4>
-                  <motion.ul className="space-y-2">
-                    {job.responsibilities.map((resp, i) => (
-                      <motion.li
-                        key={i}
-                        variants={listItem}
-                        className="flex items-start gap-2 text-sm text-muted-foreground"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-violet-500 mt-1.5 flex-shrink-0" />
-                        {resp}
-                      </motion.li>
-                    ))}
-                  </motion.ul>
-                </motion.div>
-              )}
-
-              {/* Experience to Highlight */}
-              {job.experience_to_highlight && job.experience_to_highlight.length > 0 && (
-                <motion.div
-                  variants={sectionReveal}
-                  initial="initial"
-                  animate="animate"
-                >
-                  <motion.h4
-                    variants={sectionItem}
-                    className="font-semibold mb-3 flex items-center gap-2"
-                  >
-                    <Lightbulb className="h-4 w-4 text-amber-500" />
-                    Experience to Highlight
-                  </motion.h4>
-                  <motion.ul className="space-y-2">
-                    {job.experience_to_highlight.map((exp, i) => (
-                      <motion.li
-                        key={i}
-                        variants={listItem}
-                        className="flex items-start gap-2 text-sm text-muted-foreground"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
-                        {exp}
-                      </motion.li>
-                    ))}
-                  </motion.ul>
-                </motion.div>
-              )}
-
-              {/* Questions to Ask */}
-              {job.questions_to_ask && job.questions_to_ask.length > 0 && (
-                <motion.div
-                  variants={sectionReveal}
-                  initial="initial"
-                  animate="animate"
-                >
-                  <motion.h4
-                    variants={sectionItem}
-                    className="font-semibold mb-3 flex items-center gap-2"
-                  >
-                    <HelpCircle className="h-4 w-4 text-blue-500" />
-                    Questions to Ask
-                  </motion.h4>
-                  <motion.ul className="space-y-2">
-                    {job.questions_to_ask.map((q, i) => (
-                      <motion.li
-                        key={i}
-                        variants={listItem}
-                        className="flex items-start gap-2 text-sm text-muted-foreground"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
-                        {q}
-                      </motion.li>
-                    ))}
-                  </motion.ul>
-                </motion.div>
-              )}
-
-              {/* Apply Button */}
-              <motion.div
-                className="pt-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ ...springs.smooth, delay: 0.3 }}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   transition={springs.snappy}
                 >
                   <Button
-                    asChild
-                    className="w-full relative overflow-hidden bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 glow-violet group"
-                    size="lg"
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    className="lg:hidden"
                   >
-                    <a
-                      href={job.job_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {/* Shine effect */}
-                      <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                      <ExternalLink className="h-4 w-4 mr-2 relative z-10" />
-                      <span className="relative z-10">View Job Posting</span>
-                    </a>
+                    <X className="h-5 w-5" />
                   </Button>
                 </motion.div>
+              )}
+            </motion.div>
+          </CardHeader>
+
+          <Tabs defaultValue="overview" className="flex flex-col h-[calc(100%-88px)]">
+            <div className="px-6">
+              <TabsList className="w-full">
+                <TabsTrigger value="overview" className="flex-1 gap-1.5">
+                  <Briefcase className="h-4 w-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="application" className="flex-1 gap-1.5">
+                  <FileText className="h-4 w-4" />
+                  Application
+                </TabsTrigger>
+                <TabsTrigger value="interviews" className="flex-1 gap-1.5">
+                  <Calendar className="h-4 w-4" />
+                  Interviews
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <ScrollArea className={inSheet ? "flex-1 scrollbar-thin" : "flex-1 scrollbar-thin"}>
+              <CardContent className="pt-4">
+                <TabsContent value="overview" className="mt-0">
+                  <OverviewTab job={job} />
+                </TabsContent>
+
+                <TabsContent value="application" className="mt-0">
+                  <ApplicationTab
+                    job={job}
+                    application={application}
+                    onApplicationChange={handleApplicationChange}
+                    updating={updating}
+                  />
+                </TabsContent>
+
+                <TabsContent value="interviews" className="mt-0">
+                  <InterviewsTab
+                    applicationId={application?.id}
+                    interviews={allInterviews}
+                    onAddInterview={handleAddInterview}
+                    onUpdateInterview={handleUpdateInterview}
+                    onDeleteInterview={handleDeleteInterview}
+                  />
+                </TabsContent>
+              </CardContent>
+            </ScrollArea>
+
+            {/* Apply Button - fixed at bottom */}
+            <motion.div
+              className="p-4 border-t"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...springs.smooth, delay: 0.3 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={springs.snappy}
+              >
+                <Button
+                  asChild
+                  className="w-full relative overflow-hidden bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 glow-violet group"
+                  size="lg"
+                >
+                  <a
+                    href={job.job_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {/* Shine effect */}
+                    <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    <ExternalLink className="h-4 w-4 mr-2 relative z-10" />
+                    <span className="relative z-10">View Job Posting</span>
+                  </a>
+                </Button>
               </motion.div>
-            </CardContent>
-          </ScrollArea>
+            </motion.div>
+          </Tabs>
         </Card>
       </motion.div>
     </AnimatePresence>

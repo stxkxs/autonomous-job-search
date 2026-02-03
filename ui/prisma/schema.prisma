@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id              Int       @id @default(autoincrement())
+  name            String    @unique @db.VarChar(255)
+  website         String?   @db.VarChar(500)
+  glassdoorRating Decimal?  @map("glassdoor_rating") @db.Decimal(2, 1)
+  glassdoorUrl    String?   @map("glassdoor_url") @db.VarChar(500)
+  employeeCount   String?   @map("employee_count") @db.VarChar(50)
+  funding         String?   @db.VarChar(255)
+  industry        String?   @db.VarChar(255)
+  headquarters    String?   @db.VarChar(255)
+  remotePolicy    String?   @map("remote_policy") @db.VarChar(100)
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  jobs       Job[]
+  jobNotes   Note[] @relation("CompanyNotes")
+
+  @@map("companies")
+}
+
+model Job {
+  id                    Int       @id @default(autoincrement())
+  externalId            String?   @unique @map("external_id") @db.VarChar(100)
+  jobUrl                String    @unique @map("job_url") @db.VarChar(1000)
+  atsPlatform           String?   @map("ats_platform") @db.VarChar(50)
+  companyId             Int?      @map("company_id")
+  companyName           String    @map("company_name") @db.VarChar(255)
+  role                  String    @db.VarChar(500)
+  location              String?   @db.VarChar(255)
+  salary                String?   @db.VarChar(255)
+  foundDate             DateTime? @map("found_date") @db.Date
+  matchScore            Int?      @map("match_score")
+  requirements          String[]
+  techStack             String[]  @map("tech_stack")
+  responsibilities      String[]
+  whyGoodFit            String?   @map("why_good_fit")
+  experienceToHighlight String[]  @map("experience_to_highlight")
+  questionsToAsk        String[]  @map("questions_to_ask")
+  rawData               Json?     @map("raw_data")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  company     Company?     @relation(fields: [companyId], references: [id])
+  application Application?
+  tags        JobTag[]
+  notes       Note[]       @relation("JobNotes")
+
+  @@index([companyId])
+  @@index([matchScore(sort: Desc)])
+  @@index([atsPlatform])
+  @@index([foundDate(sort: Desc)])
+  @@map("jobs")
+}
+
+enum ApplicationStatus {
+  new
+  reviewing
+  applied
+  phone_screen
+  interviewing
+  offer
+  accepted
+  rejected
+  declined
+  withdrawn
+  archived
+
+  @@map("application_status")
+}
+
+model Application {
+  id               Int               @id @default(autoincrement())
+  jobId            Int               @unique @map("job_id")
+  status           ApplicationStatus @default(new)
+  appliedDate      DateTime?         @map("applied_date") @db.Date
+  responseDate     DateTime?         @map("response_date") @db.Date
+  nextStep         String?           @map("next_step") @db.VarChar(500)
+  nextStepDate     DateTime?         @map("next_step_date")
+  salaryDiscussed  String?           @map("salary_discussed") @db.VarChar(255)
+  notes            String?
+  resumeVersion    String?           @map("resume_version") @db.VarChar(100)
+  coverLetterUsed  Boolean           @default(false) @map("cover_letter_used")
+  referral         String?           @db.VarChar(255)
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at")
+
+  job        Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  interviews Interview[]
+
+  @@index([status])
+  @@index([jobId])
+  @@map("applications")
+}
+
+model Interview {
+  id               Int       @id @default(autoincrement())
+  applicationId    Int       @map("application_id")
+  interviewType    String?   @map("interview_type") @db.VarChar(100)
+  scheduledAt      DateTime? @map("scheduled_at")
+  durationMinutes  Int?      @map("duration_minutes")
+  interviewerNames String[]  @map("interviewer_names")
+  location         String?   @db.VarChar(500)
+  notes            String?
+  feedback         String?
+  outcome          String?   @db.VarChar(50)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([scheduledAt])
+  @@map("interviews")
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  jobId     Int?     @map("job_id")
+  companyId Int?     @map("company_id")
+  content   String
+  noteType  String?  @map("note_type") @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  job     Job?     @relation("JobNotes", fields: [jobId], references: [id], onDelete: Cascade)
+  company Company? @relation("CompanyNotes", fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([companyId])
+  @@map("notes")
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @db.VarChar(100)
+  color     String?  @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  jobs JobTag[]
+
+  @@map("tags")
+}
+
+model JobTag {
+  jobId Int @map("job_id")
+  tagId Int @map("tag_id")
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([jobId, tagId])
+  @@map("job_tags")
+}
+
+model SearchHistory {
+  id           Int      @id @default(autoincrement())
+  query        String
+  platform     String?  @db.VarChar(50)
+  resultsCount Int?     @map("results_count")
+  agentId      Int?     @map("agent_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("search_history")
+}

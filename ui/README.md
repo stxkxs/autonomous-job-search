@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Job Search UI
 
-## Getting Started
+Next.js frontend for browsing and tracking job applications.
 
-First, run the development server:
+## Quick Start
+
+```bash
+# From project root
+make dev-full    # Starts database + UI with API mode
+
+# Or manually:
+cd ui
+cp .env.example .env
+npm install
+npx prisma db push
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+## Modes
+
+### Static Mode (default)
+Reads from `public/data/jobs.json`. No database required.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### API Mode
+Uses PostgreSQL for persistence. Enables application tracking and interviews.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Set in .env
+NEXT_PUBLIC_USE_API=true
+DATABASE_URL="postgresql://jobsearch:jobsearch@localhost:5432/jobsearch"
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Start database first
+docker compose up -d db
 
-## Learn More
+# Push schema and start
+npx prisma db push
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Job Browser
+- Filter by status, score, tech stack, location
+- Sort by match score or date
+- Hide/unhide jobs
+- Pagination
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Job Detail Panel (3 tabs)
 
-## Deploy on Vercel
+**Overview Tab**
+- Match score and company info
+- Tech stack, requirements, responsibilities
+- Why it's a good fit
+- Questions to ask
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Application Tab**
+- Status dropdown (New → Applied → Interviewing → Offer/Rejected)
+- Next step with due date
+- Application details (resume version, cover letter, referral, salary)
+- Notes
+- Timeline of events
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Interviews Tab**
+- Add/edit/delete interviews
+- Interview types: Phone Screen, Technical, Behavioral, System Design, etc.
+- Track date, duration, location, interviewers
+- Record outcome (Passed/Failed/Cancelled) and feedback
+
+## Project Structure
+
+```
+ui/
+├── src/
+│   ├── app/
+│   │   ├── api/              # API routes
+│   │   │   ├── jobs/         # Job CRUD
+│   │   │   ├── applications/ # Application CRUD
+│   │   │   ├── interviews/   # Interview CRUD
+│   │   │   └── stats/        # Dashboard stats
+│   │   └── page.tsx          # Main page
+│   ├── components/
+│   │   ├── ui/               # shadcn/ui components
+│   │   ├── job-card.tsx      # Job list item
+│   │   ├── job-detail.tsx    # Detail panel with tabs
+│   │   └── job-detail/       # Tab components
+│   │       ├── overview-tab.tsx
+│   │       ├── application-tab.tsx
+│   │       ├── interviews-tab.tsx
+│   │       └── interview-form.tsx
+│   ├── hooks/
+│   │   ├── use-jobs.ts       # Job fetching
+│   │   ├── use-application.ts # Application state
+│   │   └── use-interviews.ts # Interview CRUD
+│   └── types/
+│       ├── job.ts            # Job types
+│       └── application.ts    # Application/Interview types
+├── prisma/
+│   └── schema.prisma         # Database schema
+└── public/
+    └── data/
+        └── jobs.json         # Static job data
+```
+
+## API Routes
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/jobs` | List jobs (with filters) |
+| GET | `/api/jobs/[id]` | Get job by ID |
+| PATCH | `/api/jobs/[id]` | Update job (status, hidden) |
+| GET | `/api/applications` | List applications |
+| POST | `/api/applications` | Create/update application |
+| PATCH | `/api/applications/[id]` | Update application |
+| GET | `/api/interviews` | List interviews |
+| POST | `/api/interviews` | Create interview |
+| PATCH | `/api/interviews/[id]` | Update interview |
+| DELETE | `/api/interviews/[id]` | Delete interview |
+| GET | `/api/stats` | Dashboard statistics |
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | Required for API mode |
+| `NEXT_PUBLIC_USE_API` | Enable API mode | `false` |
+
+## Tech Stack
+
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
+- Prisma ORM
+- PostgreSQL
+- Framer Motion (animations)

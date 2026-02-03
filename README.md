@@ -1,203 +1,132 @@
 # autonomous-job-search
 
-> Autonomous job search agent powered by Claude. Searches multiple ATS platforms, researches companies, and prepares application materials - you just apply.
+> Autonomous job search agent powered by Claude. Searches multiple ATS platforms in parallel, researches companies, and prepares application materials - you just apply.
+
+## Quick Start
+
+```bash
+# Install
+git clone https://github.com/stxkxs/autonomous-job-search.git
+cd autonomous-job-search
+uv pip install -e .
+
+# Configure your profile (edit with your skills/experience)
+cp prompts/resume.md.example prompts/resume.md
+# Edit prompts/resume.md with YOUR details
+
+# Run 4 parallel agents
+make search
+```
+
+That's it. Four agents search Greenhouse, Lever, Ashby, and Workable simultaneously. Results merge to `output/merged/jobs.json`.
 
 ## How It Works
 
-This tool uses the **Claude Agent SDK** which leverages your existing **Claude Code CLI** authentication. No API keys to manage - if you're logged into Claude Code, you're ready to go.
+This tool uses the **Claude Agent SDK** with your existing **Claude Code CLI** authentication. No API keys needed.
 
-```mermaid
-flowchart LR
-    subgraph You["You (One Time Setup)"]
-        A[Configure prompts<br/>with your skills]
-    end
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Coordinator (Python)                      │
+│  - Spawns 4 agent tasks via asyncio                         │
+│  - Monitors progress via state files                        │
+│  - Triggers merge when agents complete                      │
+└─────────────────────────────────────────────────────────────┘
+         │              │              │              │
+         ▼              ▼              ▼              ▼
+    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
+    │ Agent 1 │   │ Agent 2 │   │ Agent 3 │   │ Agent 4 │
+    │Greenhouse│   │  Lever  │   │  Ashby  │   │Workable │
+    └────┬────┘   └────┬────┘   └────┬────┘   └────┬────┘
+         │              │              │              │
+         ▼              ▼              ▼              ▼
+    output/         output/         output/         output/
+    agent-1/        agent-2/        agent-3/        agent-4/
+         │              │              │              │
+         └──────────────┴──────────────┴──────────────┘
+                               │
+                               ▼
+                    ┌─────────────────┐
+                    │   Merger        │
+                    │ Dedupes by URL  │
+                    │ Sorts by score  │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    output/merged/jobs.json
+```
 
-    subgraph Agent["Autonomous Agent Loop"]
-        B[Search ATS platforms<br/>for jobs] --> C[Fetch job<br/>details]
-        C --> D[Research<br/>company]
-        D --> E[Score &<br/>prepare materials]
-        E --> F[Save to<br/>catalog]
-        F --> B
-    end
+## Commands
 
-    subgraph Output["Output"]
-        G[jobs.json<br/>Full catalog]
-        H[jobs_summary.md<br/>Top matches]
-    end
+```bash
+# Multi-Agent Orchestration
+make search           # Start all 4 agents (alias for agents-start)
+make agents-start     # Start all 4 agents
+make agents-start-2   # Start only 2 agents
+make agents-status    # Show agent status dashboard
+make agents-merge     # Merge outputs manually
+make agents-stop      # Stop all agents gracefully
 
-    A --> B
-    F --> G
-    F --> H
+# View Results
+make docker-up        # Start PostgreSQL
+make import-jobs      # Import merged jobs to database
+make ui               # Start web UI at localhost:3000
+
+# Cleanup
+make docker-down      # Stop database
+make reset            # Clear agent outputs
 ```
 
 ## Supported ATS Platforms
 
-The agent searches across multiple Applicant Tracking Systems:
+Each agent searches one platform in parallel:
 
-| Platform | Domain | Companies Using It |
-|----------|--------|-------------------|
-| **Greenhouse** | `boards.greenhouse.io` | Stripe, Airbnb, Datadog, Figma, Notion, Cloudflare, Discord |
-| **Lever** | `jobs.lever.co` | Netflix, Shopify, Twitch, Lyft, Atlassian |
-| **Ashby** | `jobs.ashbyhq.com` | Ramp, OpenAI, Deel, Vercel, Linear |
-| **Workable** | `apply.workable.com` | Various startups and mid-size companies |
+| Agent | Platform | Domain | Example Companies |
+|-------|----------|--------|-------------------|
+| 1 | **Greenhouse** | `boards.greenhouse.io` | Stripe, Airbnb, Datadog, Figma, Notion |
+| 2 | **Lever** | `jobs.lever.co` | Netflix, Shopify, Twitch, Lyft, Atlassian |
+| 3 | **Ashby** | `jobs.ashbyhq.com` | Ramp, OpenAI, Deel, Vercel, Linear |
+| 4 | **Workable** | `apply.workable.com` | Various startups and mid-size companies |
 
-You can configure the agent to focus on specific platforms or search all of them.
+Configure agents in `config/agents.json`.
 
-## Architecture
-
-```mermaid
-flowchart TB
-    subgraph CLI["Your Machine"]
-        Main["main.py<br/>Entry point"] --> Agent["agent.py<br/>Session loop"]
-        Agent --> Client["client.py<br/>SDK config"]
-        Agent --> Prompts["prompts.py<br/>Load templates"]
-    end
-
-    subgraph SDK["Claude Agent SDK"]
-        Client --> Query["query()"]
-        Query --> Auth["Claude Code CLI Auth"]
-    end
-
-    subgraph Cloud["Claude API"]
-        Auth --> Claude["Claude Sonnet"]
-    end
-
-    subgraph Tools["Agent Tools"]
-        Claude --> WS["WebSearch"]
-        Claude --> WF["WebFetch"]
-        Claude --> RW["Read/Write/Edit"]
-        Claude --> Bash["Bash"]
-    end
-
-    subgraph PromptFiles["prompts/ (Your Config)"]
-        P1["app_spec.txt<br/>Your profile"]
-        P2["initializer_prompt.md<br/>First run instructions"]
-        P3["coding_prompt.md<br/>Continuation instructions"]
-    end
-
-    Prompts --> P1
-    Prompts --> P2
-    Prompts --> P3
-```
-
-## Quick Start
-
-### Prerequisites
+## Prerequisites
 
 - Python 3.12+
+- [uv](https://github.com/astral-sh/uv) package manager
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated
-- That's it! No API key needed.
+- Docker (optional, for web UI database)
 
-### Setup
-
-```bash
-# Clone
-git clone https://github.com/stxkxs/autonomous-job-search.git
-cd autonomous-job-search
-
-# Install
-uv venv && source .venv/bin/activate
-uv pip install -e .
-
-# Configure your profile
-cp prompts/app_spec.txt.example prompts/app_spec.txt
-cp prompts/coding_prompt.md.example prompts/coding_prompt.md
-cp prompts/initializer_prompt.md.example prompts/initializer_prompt.md
-
-# Edit each file with YOUR details (skills, experience, target roles)
-# These files are gitignored - your personal info stays private
-```
-
-### Run
+## CLI Options
 
 ```bash
-# Start the agent
+# Multi-agent orchestration (recommended)
+python -m src.orchestration start           # Start all 4 agents
+python -m src.orchestration start -n 2      # Start only 2 agents
+python -m src.orchestration start -i 5      # Limit to 5 iterations per agent
+python -m src.orchestration status          # Show status dashboard
+python -m src.orchestration merge           # Merge outputs now
+python -m src.orchestration stop            # Stop all agents
+
+# Single-agent mode (legacy)
 python -m src.main --project-dir ./output
-
-# Watch it work autonomously...
-# Ctrl+C to stop (you can resume anytime)
-```
-
-## Agent Workflow
-
-```mermaid
-sequenceDiagram
-    participant You
-    participant Agent
-    participant Claude
-    participant Web
-    participant Files
-
-    You->>Agent: python -m src.main
-
-    loop Until complete or max iterations
-        Agent->>Claude: Send prompt (initializer or coding)
-
-        Claude->>Web: WebSearch: site:greenhouse.io "python" "senior"
-        Claude->>Web: WebSearch: site:lever.co "backend" "staff"
-        Claude->>Web: WebSearch: site:ashbyhq.com "platform"
-        Web-->>Claude: Job listing URLs
-
-        loop For each job
-            Claude->>Web: WebFetch: boards.greenhouse.io/company/jobs/123
-            Web-->>Claude: Job details, requirements, salary
-
-            Claude->>Web: WebSearch: "Company" glassdoor rating
-            Web-->>Claude: Company research
-
-            Claude->>Files: Read existing jobs.json
-            Files-->>Claude: Current catalog
-
-            Claude->>Claude: Score job, prepare materials
-
-            Claude->>Files: Write updated jobs.json
-        end
-
-        Claude-->>Agent: Session complete
-        Agent->>Agent: Check progress, continue?
-    end
-
-    Agent-->>You: Catalog ready in ./output/
-```
-
-## Configuration
-
-### Prompt Files
-
-The `prompts/` directory defines your job search. Files are gitignored to keep your personal details private.
-
-| File | Purpose |
-|------|---------|
-| `app_spec.txt` | **Your profile** - name, location, skills, experience, target roles |
-| `initializer_prompt.md` | **First run** - how to search, what companies to target |
-| `coding_prompt.md` | **Continuation** - how to add more jobs without duplicates |
-
-### CLI Options
-
-```bash
-# Specify output directory
-python -m src.main --project-dir ./my-job-search
-
-# Limit iterations (default: 50)
 python -m src.main --max-iterations 10
-
-# Filter by skills
-python -m src.main --skills java kubernetes aws
-
-# Use different model
-python -m src.main --model claude-sonnet-4-5-20250514
 ```
 
 ## Output
 
 ```
 output/
-├── data/
-│   ├── jobs/
-│   │   └── jobs.json      # Full job catalog
-│   └── companies/
-│       └── companies.json # Company research
-└── jobs_summary.md        # Human-readable summary
+├── agent-1/                 # Greenhouse agent
+│   ├── state.json          # Agent status
+│   ├── jobs.json           # Jobs found
+│   └── session.log         # Activity log
+├── agent-2/                 # Lever agent
+├── agent-3/                 # Ashby agent
+├── agent-4/                 # Workable agent
+├── merged/
+│   ├── jobs.json           # Combined, deduplicated
+│   └── companies.json      # Combined company data
+└── orchestration-state.json # Session status
 ```
 
 ### Job Entry Example
@@ -237,53 +166,96 @@ output/
 }
 ```
 
-## Resuming & Iteration
+## Status Dashboard
 
-The agent is designed for iterative use:
+Check agent progress anytime:
 
 ```bash
-# First run - initializes catalog
-python -m src.main --project-dir ./output
+make agents-status
+```
 
-# Later - continues where you left off
-python -m src.main --project-dir ./output
-
-# The agent reads existing jobs.json and avoids duplicates
+```
++==============================================================+
+|                  Job Search Orchestration                    |
++==============================================================+
+| Agent 1 (GREENHOUSE) | RUNNING  | Iter 5   | 12 jobs  |  10m |
+| Agent 2 (LEVER     ) | RUNNING  | Iter 3   |  8 jobs  |   5m |
+| Agent 3 (ASHBY     ) | COMPLETE | Iter 7   | 15 jobs  |   2m |
+| Agent 4 (WORKABLE  ) | RUNNING  | Iter 4   | 10 jobs  |   8m |
++--------------------------------------------------------------+
+| Total: 45 jobs found | 3/4 running | Last merge:    5m ago |
++==============================================================+
 ```
 
 ## Web UI
 
-The project includes a Next.js frontend for browsing your job catalog:
+Browse your job catalog with the Next.js frontend:
 
 ```bash
-cd ui
-npm install
-npm run dev
+# Start database and UI with API mode
+make dev-full
+
+# Or manually:
+make docker-up        # Start PostgreSQL
+make import-jobs      # Import merged jobs
+make ui               # Start UI (static mode)
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to:
 - Browse all discovered jobs with filtering and sorting
 - View match scores and detailed job information
-- See analytics on tech stacks, locations, and companies
-- Track jobs across different ATS platforms
+- Filter by ATS platform, tech stack, location
+- Hide/unhide jobs you're not interested in
+
+### Application Tracking
+
+The job detail panel has three tabs:
+
+| Tab | Features |
+|-----|----------|
+| **Overview** | Job details, tech stack, requirements, why it's a good fit |
+| **Application** | Status tracking, next steps, resume version, referral info, notes, timeline |
+| **Interviews** | Schedule interviews, track outcomes, add notes and feedback |
+
+To track an application:
+1. Select a job from the list
+2. Go to the **Application** tab
+3. Change the status (e.g., "Applied") - this creates the application record
+4. Add next steps, notes, referral info as needed
+5. Go to **Interviews** tab to schedule and track interviews
 
 ## Project Structure
 
 ```
 autonomous-job-search/
 ├── src/
-│   ├── main.py       # CLI entry point
-│   ├── agent.py      # Session loop & iteration
-│   ├── client.py     # Claude Agent SDK config
-│   ├── prompts.py    # Load prompt templates
-│   ├── progress.py   # Progress tracking
-│   └── security.py   # Input validation
+│   ├── main.py              # Single-agent CLI entry
+│   ├── agent.py             # Agent session loop
+│   ├── client.py            # Claude Agent SDK config
+│   ├── prompts.py           # Prompt loading
+│   └── orchestration/       # Multi-agent orchestration
+│       ├── __main__.py      # CLI: python -m src.orchestration
+│       ├── coordinator.py   # Spawns & monitors agents
+│       ├── agent_runner.py  # Per-agent execution
+│       ├── merger.py        # Dedupe & merge outputs
+│       └── state.py         # State file management
+├── config/
+│   └── agents.json          # Agent definitions
 ├── prompts/
-│   ├── *.example     # Template files (committed)
-│   └── *.txt/*.md    # Your config (gitignored)
-├── ui/               # Next.js job catalog viewer
-├── tests/
-└── output/           # Generated job catalog
+│   ├── resume.md            # Your profile (gitignored)
+│   └── agents/              # Platform-specific prompts
+│       ├── greenhouse-agent.md
+│       ├── lever-agent.md
+│       ├── ashby-agent.md
+│       └── workable-agent.md
+├── ui/                      # Next.js job catalog viewer
+└── output/                  # Generated outputs
+    ├── agent-1/             # Greenhouse agent output
+    ├── agent-2/             # Lever agent output
+    ├── agent-3/             # Ashby agent output
+    ├── agent-4/             # Workable agent output
+    └── merged/              # Combined, deduplicated jobs
+        └── jobs.json
 ```
 
 ## License

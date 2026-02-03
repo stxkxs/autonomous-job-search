@@ -1,0 +1,36 @@
+{
+  "agents": [
+    {
+      "id": 1,
+      "name": "GREENHOUSE",
+      "platform": "greenhouse",
+      "domain": "boards.greenhouse.io",
+      "prompt_file": "prompts/agents/greenhouse-agent.md"
+    },
+    {
+      "id": 2,
+      "name": "LEVER",
+      "platform": "lever",
+      "domain": "jobs.lever.co",
+      "prompt_file": "prompts/agents/lever-agent.md"
+    },
+    {
+      "id": 3,
+      "name": "ASHBY",
+      "platform": "ashby",
+      "domain": "jobs.ashbyhq.com",
+      "prompt_file": "prompts/agents/ashby-agent.md"
+    },
+    {
+      "id": 4,
+      "name": "WORKABLE",
+      "platform": "workable",
+      "domain": "apply.workable.com",
+      "prompt_file": "prompts/agents/workable-agent.md"
+    }
+  ],
+  "scoring": {
+    "min_score": 70,
+    "max_jobs_per_agent": 75
+  }
+}

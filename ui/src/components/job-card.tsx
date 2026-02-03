@@ -8,6 +8,8 @@ import {
   Calendar,
   Star,
   ChevronRight,
+  X,
+  RotateCcw,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +20,8 @@ import {
   getATSDisplayName,
   getATSColor,
   detectATSPlatform,
+  getStatusColor,
+  getStatusLabel,
 } from "@/types/job";
 import { springs, selectionIndicator, pulse } from "@/lib/animations";
 
@@ -26,9 +30,12 @@ interface JobCardProps {
   index: number;
   onSelect: (job: Job) => void;
   isSelected?: boolean;
+  isHidden?: boolean;
+  onHide?: (jobId: string) => void;
+  onShow?: (jobId: string) => void;
 }
 
-export function JobCard({ job, index, onSelect, isSelected }: JobCardProps) {
+export function JobCard({ job, index, onSelect, isSelected, isHidden, onHide, onShow }: JobCardProps) {
   const scoreColor = getScoreColor(job.match_score);
   const scoreBgColor = getScoreBgColor(job.match_score);
   const atsPlatform = job.ats_platform || detectATSPlatform(job.job_url);
@@ -163,12 +170,57 @@ export function JobCard({ job, index, onSelect, isSelected }: JobCardProps) {
               </div>
 
               <div className="flex flex-col items-end gap-2">
-                {job.status === "priority" && (
-                  <Badge className="bg-emerald-500 hover:bg-emerald-600">
-                    <Star className="h-3 w-3 mr-1" aria-hidden="true" />
-                    Priority
-                  </Badge>
-                )}
+                <div className="flex items-center gap-1">
+                  {job.match_score >= 90 && (
+                    <Badge className="bg-emerald-500 hover:bg-emerald-600">
+                      <Star className="h-3 w-3 mr-1" aria-hidden="true" />
+                      Priority
+                    </Badge>
+                  )}
+                  {job.status && job.status !== "new" && (
+                    <Badge className={getStatusColor(job.status)}>
+                      {getStatusLabel(job.status)}
+                    </Badge>
+                  )}
+                  {/* Hide/Show button */}
+                  {isHidden ? (
+                    onShow && (
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={springs.snappy}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onShow(job.id);
+                        }}
+                        className="p-1.5 rounded-full bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400 transition-colors"
+                        aria-label={`Restore ${job.role} at ${job.company}`}
+                        title="Restore this job"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                      </motion.button>
+                    )
+                  ) : (
+                    onHide && (
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0 }}
+                        whileHover={{ opacity: 1, scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={springs.snappy}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onHide(job.id);
+                        }}
+                        className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
+                        aria-label={`Hide ${job.role} at ${job.company}`}
+                        title="Hide this job"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </motion.button>
+                    )
+                  )}
+                </div>
                 <motion.div
                   initial={{ opacity: 0, x: -4 }}
                   animate={{ opacity: 0, x: -4 }}

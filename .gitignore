@@ -61,8 +61,15 @@ secrets.json
 # Personal prompts (use *.example files as templates)
 prompts/*.txt
 prompts/*.md
+prompts/agents/*.md
 !prompts/*.example
+!prompts/agents/*.example
 app_spec.txt
+
+# Personal documents - NEVER commit
+*.pdf
+resume.*
+cv.*
 
 # OS
 .DS_Store

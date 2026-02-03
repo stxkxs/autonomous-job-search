@@ -10,6 +10,40 @@ import {
 
 export type { ScoreCategory, ATSPlatform };
 
+// Application Status Types
+export type ApplicationStatus =
+  | "new"
+  | "reviewing"
+  | "applied"
+  | "phone_screen"
+  | "interviewing"
+  | "offer"
+  | "rejected"
+  | "declined"
+  | "withdrawn";
+
+export const APPLICATION_STATUSES = [
+  { value: "new" as const, label: "New", color: "bg-slate-500/20 text-slate-600 dark:text-slate-400" },
+  { value: "reviewing" as const, label: "Reviewing", color: "bg-blue-500/20 text-blue-600 dark:text-blue-400" },
+  { value: "applied" as const, label: "Applied", color: "bg-violet-500/20 text-violet-600 dark:text-violet-400" },
+  { value: "phone_screen" as const, label: "Phone Screen", color: "bg-amber-500/20 text-amber-600 dark:text-amber-400" },
+  { value: "interviewing" as const, label: "Interviewing", color: "bg-orange-500/20 text-orange-600 dark:text-orange-400" },
+  { value: "offer" as const, label: "Offer", color: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" },
+  { value: "rejected" as const, label: "Rejected", color: "bg-red-500/20 text-red-600 dark:text-red-400" },
+  { value: "declined" as const, label: "Declined", color: "bg-gray-500/20 text-gray-600 dark:text-gray-400" },
+  { value: "withdrawn" as const, label: "Withdrawn", color: "bg-gray-500/20 text-gray-600 dark:text-gray-400" },
+] as const;
+
+export function getStatusColor(status: string): string {
+  const statusInfo = APPLICATION_STATUSES.find((s) => s.value === status);
+  return statusInfo?.color ?? "bg-slate-500/20 text-slate-600 dark:text-slate-400";
+}
+
+export function getStatusLabel(status: string): string {
+  const statusInfo = APPLICATION_STATUSES.find((s) => s.value === status);
+  return statusInfo?.label ?? "Unknown";
+}
+
 export interface Job {
   id: string;
   job_url: string;
@@ -28,8 +62,11 @@ export interface Job {
   why_good_fit?: string;
   experience_to_highlight?: string[];
   questions_to_ask?: string[];
-  status?: "new" | "applied" | "priority" | "interviewing" | "rejected";
+  status?: ApplicationStatus;
   ats_platform?: ATSPlatform;
+  // Database-specific fields (when using API mode)
+  dbId?: number;
+  appliedDate?: string;
 }
 
 export interface JobStats {

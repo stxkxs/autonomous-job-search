@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: jobsearch-db
+    environment:
+      POSTGRES_USER: jobsearch
+      POSTGRES_PASSWORD: jobsearch
+      POSTGRES_DB: jobsearch
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobsearch"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+      target: dev
+    container_name: jobsearch-app
+    environment:
+      DATABASE_URL: postgresql://jobsearch:jobsearch@db:5432/jobsearch
+      NEXT_PUBLIC_USE_API: "true"
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./ui/src:/app/src
+      - ./ui/public:/app/public
+      - ./ui/prisma:/app/prisma
+      - ./output:/app/output:ro
+
+  # Run migrations on startup
+  migrate:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+      target: deps
+    container_name: jobsearch-migrate
+    environment:
+      DATABASE_URL: postgresql://jobsearch:jobsearch@db:5432/jobsearch
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ./node_modules/.bin/prisma db push
+    profiles:
+      - setup
+
+volumes:
+  postgres_data:

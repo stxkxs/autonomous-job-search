@@ -1,0 +1,90 @@
+{
+  "projectPath": "./",
+  "outputPath": "./output",
+  "agents": [
+    {
+      "id": 1,
+      "name": "GREENHOUSE",
+      "platform": "greenhouse",
+      "outputDir": "agent-1",
+      "promptFile": "greenhouse-agent.md",
+      "domains": ["boards.greenhouse.io"],
+      "promptOverrides": {
+        "maxJobs": 75,
+        "minScore": 70
+      }
+    },
+    {
+      "id": 2,
+      "name": "LEVER",
+      "platform": "lever",
+      "outputDir": "agent-2",
+      "promptFile": "lever-agent.md",
+      "domains": ["jobs.lever.co"],
+      "promptOverrides": {
+        "maxJobs": 75,
+        "minScore": 70
+      }
+    },
+    {
+      "id": 3,
+      "name": "ASHBY",
+      "platform": "ashby",
+      "outputDir": "agent-3",
+      "promptFile": "ashby-agent.md",
+      "domains": ["jobs.ashbyhq.com"],
+      "promptOverrides": {
+        "maxJobs": 75,
+        "minScore": 70
+      }
+    },
+    {
+      "id": 4,
+      "name": "WORKABLE",
+      "platform": "workable",
+      "outputDir": "agent-4",
+      "promptFile": "workable-agent.md",
+      "domains": ["apply.workable.com"],
+      "promptOverrides": {
+        "maxJobs": 75,
+        "minScore": 70
+      }
+    }
+  ],
+  "resume": {
+    "path": "./prompts/resume.md",
+    "autoLoad": true
+  },
+  "merge": {
+    "enabled": true,
+    "outputFile": "jobs.json",
+    "dedupeKey": "job_url",
+    "sortBy": "match_score",
+    "sortOrder": "desc",
+    "uiDataPath": "./ui/public/data/jobs.json"
+  },
+  "companyResearch": {
+    "enabled": true,
+    "sources": ["glassdoor", "crunchbase", "linkedin"]
+  },
+  "scoring": {
+    "thresholds": {
+      "priority": 90,
+      "high": 85,
+      "good": 80,
+      "minimum": 70
+    },
+    "criteria": {
+      "techStackMatch": 30,
+      "seniorityMatch": 25,
+      "remotePolicy": 20,
+      "companyProfile": 15,
+      "salaryRange": 10
+    }
+  },
+  "search": {
+    "delayBetweenRequests": 5,
+    "maxResultsPerQuery": 20,
+    "dateRange": "month"
+  }
+}

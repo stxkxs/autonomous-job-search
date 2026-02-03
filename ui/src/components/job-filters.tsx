@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, Eye, EyeOff, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,11 @@ interface JobFiltersProps {
   availableTech: string[];
   totalJobs: number;
   filteredCount: number;
+  // Hidden jobs
+  showHidden: boolean;
+  onShowHiddenChange: (show: boolean) => void;
+  hiddenCount: number;
+  onClearAllHidden?: () => void;
 }
 
 export function JobFilters({
@@ -45,6 +50,10 @@ export function JobFilters({
   availableTech,
   totalJobs,
   filteredCount,
+  showHidden,
+  onShowHiddenChange,
+  hiddenCount,
+  onClearAllHidden,
 }: JobFiltersProps) {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
@@ -215,6 +224,58 @@ export function JobFilters({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Hidden Jobs Toggle */}
+        {hiddenCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={springs.snappy}
+            className="flex items-center gap-1"
+          >
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={springs.snappy}
+            >
+              <Button
+                variant={showHidden ? "default" : "outline"}
+                className="shrink-0"
+                onClick={() => onShowHiddenChange(!showHidden)}
+              >
+                {showHidden ? (
+                  <Eye className="h-4 w-4 mr-2" />
+                ) : (
+                  <EyeOff className="h-4 w-4 mr-2" />
+                )}
+                Hidden
+                <Badge
+                  variant="secondary"
+                  className="ml-2 bg-background/20 text-xs"
+                >
+                  {hiddenCount}
+                </Badge>
+              </Button>
+            </motion.div>
+            {showHidden && onClearAllHidden && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={springs.snappy}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClearAllHidden}
+                  className="text-muted-foreground hover:text-red-500"
+                  title="Restore all hidden jobs"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
       </div>
 
       {/* Active Filters */}

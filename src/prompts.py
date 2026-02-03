@@ -41,3 +41,22 @@ def copy_spec_to_project(project_dir: Path, platform: str, skills: list[str]) ->
             content = content.replace("{{SKILLS}}", ", ".join(skills))
             dest.write_text(content)
             print(f"Created app_spec.txt at {dest}")
+
+
+def get_agent_prompt(platform: str) -> str:
+    """
+    Load the prompt for a specific platform agent.
+
+    Args:
+        platform: Platform name (greenhouse, lever, ashby, workable)
+
+    Returns:
+        The prompt content as a string
+
+    Raises:
+        FileNotFoundError: If the prompt file doesn't exist
+    """
+    prompt_file = PROMPTS_DIR / "agents" / f"{platform}-agent.md"
+    if not prompt_file.exists():
+        raise FileNotFoundError(f"Agent prompt not found: {prompt_file}")
+    return prompt_file.read_text()
