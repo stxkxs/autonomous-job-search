@@ -193,7 +193,7 @@ export function JobCard({ job, index, onSelect, isSelected, isHidden, onHide, on
                           e.stopPropagation();
                           onShow(job.id);
                         }}
-                        className="p-1.5 rounded-full bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400 transition-colors"
+                        className="p-1.5 rounded-full bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400 transition-colors cursor-pointer"
                         aria-label={`Restore ${job.role} at ${job.company}`}
                         title="Restore this job"
                       >
@@ -212,7 +212,7 @@ export function JobCard({ job, index, onSelect, isSelected, isHidden, onHide, on
                           e.stopPropagation();
                           onHide(job.id);
                         }}
-                        className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
+                        className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors cursor-pointer"
                         aria-label={`Hide ${job.role} at ${job.company}`}
                         title="Hide this job"
                       >

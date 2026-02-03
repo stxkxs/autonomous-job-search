@@ -308,7 +308,7 @@ export function JobFilters({
                     whileHover={{ rotate: 90 }}
                     transition={springs.snappy}
                     onClick={() => onSearchChange("")}
-                    className="ml-1 rounded-full p-0.5 hover:bg-background/50"
+                    className="ml-1 rounded-full p-0.5 hover:bg-background/50 cursor-pointer"
                     aria-label="Remove search filter"
                   >
                     <X className="h-3 w-3 cursor-pointer" />
@@ -331,7 +331,7 @@ export function JobFilters({
                     whileHover={{ rotate: 90 }}
                     transition={springs.snappy}
                     onClick={() => onScoreFilterChange(0)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-background/50"
+                    className="ml-1 rounded-full p-0.5 hover:bg-background/50 cursor-pointer"
                     aria-label="Remove score filter"
                   >
                     <X className="h-3 w-3 cursor-pointer" />
@@ -354,7 +354,7 @@ export function JobFilters({
                     whileHover={{ rotate: 90 }}
                     transition={springs.snappy}
                     onClick={() => handleTechToggle(tech)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-background/50"
+                    className="ml-1 rounded-full p-0.5 hover:bg-background/50 cursor-pointer"
                     aria-label={`Remove ${tech} filter`}
                   >
                     <X className="h-3 w-3 cursor-pointer" />
